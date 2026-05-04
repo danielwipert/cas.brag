@@ -1,0 +1,38 @@
+# Local-only working material — never push.
+planning/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Corpus content stays local (one-time ingestion artifacts).
+data/raw/
+data/dev_subset/
+data/chunk_store/
+data/fact_store/
+data/logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Claude Code per-user permission settings (team settings.json is fine to commit).
+.claude/settings.local.json
