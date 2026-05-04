@@ -80,20 +80,42 @@ def save_transcript(pdf_bytes: bytes, dest: Path) -> Path:
     return dest
 
 
-# Speakers commonly present on Netflix transcripts. Pattern matching is loose
-# because some transcripts use different cap conventions.
-_KNOWN_SPEAKERS = (
+# Speakers commonly present on Netflix transcripts. q4cdn-hosted earnings
+# transcripts are S&P Global Market Intelligence typesets and use formal
+# names as speaker labels ("Theodore A. Sarandos") rather than the casual
+# forms used in shareholder letters ("Ted Sarandos"). We canonicalize to
+# the casual form on extraction so the asserter field is consistent across
+# transcript-sourced and letter-sourced facts (spec §2.5 examples use the
+# casual form).
+_FORMAL_TO_CASUAL: dict[str, str] = {
+    "Theodore A. Sarandos": "Ted Sarandos",
+    "Theodore Anthony Sarandos": "Ted Sarandos",
+    "Spencer Adam Neumann": "Spencer Neumann",
+    "Spence Neumann": "Spencer Neumann",
+    "Gregory K. Peters": "Greg Peters",
+    "Wilmot Reed Hastings": "Reed Hastings",
+    "Wilmot Reed Hastings Jr": "Reed Hastings",
+    "David B. Wells": "David Wells",
+}
+
+_CASUAL_NAMES: tuple[str, ...] = (
     "Ted Sarandos",
     "Spencer Neumann",
     "Greg Peters",
     "Reed Hastings",
     "David Wells",
-    "Wilmot Reed Hastings",
+    "Spencer Wang",  # Netflix VP of IR — moderates the Q&A
 )
+
+# Match formal forms first (longer strings), then casual forms.
+_ALL_NAMES = tuple(_FORMAL_TO_CASUAL.keys()) + _CASUAL_NAMES
 _SPEAKER_RE = re.compile(
-    r"(?P<name>" + "|".join(re.escape(s) for s in _KNOWN_SPEAKERS) + r")\s*[:\-—]",
-    re.IGNORECASE,
+    r"(?P<name>" + "|".join(re.escape(s) for s in _ALL_NAMES) + r")",
 )
+
+
+def _canonicalize_name(name: str) -> str:
+    return _FORMAL_TO_CASUAL.get(name, name)
 
 
 def extract_transcript_text(pdf_bytes: bytes) -> str:
@@ -112,14 +134,14 @@ def extract_transcript_text(pdf_bytes: bytes) -> str:
             pages.append("")
     raw = "\n".join(pages)
 
-    # Insert blank lines before speaker labels so chunkers can detect turns.
-    # Use a positive lookbehind-friendly transformation: prepend "\n\n" before
-    # any known speaker name occurrence that isn't already at line start with
-    # blank line above.
-    def _insert_blank(match: re.Match[str]) -> str:
-        return "\n\n" + match.group(0).strip() + " "
+    # Replace formal-form speaker labels with canonical "Casual Name:" prefix,
+    # each on its own line with a blank line above so the chunker can detect
+    # speaker turns and the LLM extractor can attribute facts to the right
+    # asserter.
+    def _label(match: re.Match[str]) -> str:
+        return f"\n\n{_canonicalize_name(match.group('name'))}:\n"
 
-    out = _SPEAKER_RE.sub(_insert_blank, raw)
+    out = _SPEAKER_RE.sub(_label, raw)
     # Collapse any 3+ newlines back to exactly 2.
     out = re.sub(r"\n{3,}", "\n\n", out)
     return out.strip()
