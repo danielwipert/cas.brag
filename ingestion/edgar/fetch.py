@@ -94,13 +94,13 @@ def find_netflix_8k_letter(*, filed_on_or_after: str, filed_on_or_before: str) -
         if fd < filed_on_or_after or fd > filed_on_or_before:
             continue
         # Item 2.02 announcements have the press release / shareholder letter as 99.1.
-        # Heuristic: look for Item 2.02 in the filing's items list.
-        items = []
-        try:
-            items = list(getattr(f, "items", []) or [])
-        except Exception:
-            items = []
-        if any("2.02" in str(item) for item in items):
+        # Filing.items is a comma-separated string ('2.02,9.01') or sometimes
+        # a list — accept both shapes.
+        raw_items = getattr(f, "items", None)
+        if raw_items is None:
+            continue
+        items_text = raw_items if isinstance(raw_items, str) else ",".join(str(x) for x in raw_items)
+        if "2.02" in items_text:
             candidates.append(f)
 
     if not candidates:

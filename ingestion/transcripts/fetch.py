@@ -1,57 +1,85 @@
 """Netflix earnings transcript acquisition from s22.q4cdn.com (build plan Block 2).
 
 Netflix publishes pre-recorded earnings interview transcripts as PDFs on its
-investor relations document host. URL pattern:
+investor relations document host. Two URL layouts have been observed:
 
-    https://s22.q4cdn.com/959853165/files/doc_financials/{year}/{quarter}/{filename}.pdf
+    /files/doc_financials/{year}/q{N}/...        (older — pre-~2024)
+    /files/doc_events/{YYYY}/{Mon}/{DD}/...      (current — 2024+)
 
-The filename component is not fully predictable (Netflix has used several
-naming conventions over the years), so this module attempts a list of known
-candidates and falls back to discovery via HEAD probe.
+The current layout's filename and path both embed the actual earnings-
+release date, which we don't know without external info. Pass
+``release_date`` (e.g. the matching 8-K Item 2.02 filing date) to
+``discover_transcript_url`` to enable the dated patterns.
 """
 from __future__ import annotations
 
 import re
+from datetime import date
 from io import BytesIO
 from pathlib import Path
 
 import requests
 from pypdf import PdfReader
 
-Q4CDN_BASE = "https://s22.q4cdn.com/959853165/files/doc_financials"
+# Date-free URL templates (older layout). Probed when no release_date is known.
+_URL_TEMPLATES_DATEFREE: tuple[str, ...] = (
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/FINAL-Q{q}-{yy}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/FINAL-Q{q}-{yyyy}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Q{q}-{yy}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Q{q}-{yyyy}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Q{q}{yy}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/{yyyy}-Q{q}-Earnings-Interview-Transcript.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Earnings-Interview-Transcript-Q{q}-{yyyy}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Final-Earnings-Interview-Q{q}-{yyyy}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/NFLX-Q{q}-{yyyy}-Earnings-Interview.pdf",
+)
 
-# Candidate filename templates Netflix has used. Probed in order; first 200 wins.
-_FILENAME_PATTERNS: tuple[str, ...] = (
-    "FINAL-Q{q}-{yy}-Earnings-Interview-Transcript.pdf",
-    "FINAL-Q{q}-{yyyy}-Earnings-Interview-Transcript.pdf",
-    "Q{q}-{yy}-Earnings-Interview-Transcript.pdf",
-    "Q{q}-{yyyy}-Earnings-Interview-Transcript.pdf",
-    "Q{q}{yy}-Earnings-Interview-Transcript.pdf",
-    "{yyyy}-Q{q}-Earnings-Interview-Transcript.pdf",
-    "Earnings-Interview-Transcript-Q{q}-{yyyy}.pdf",
-    "Final-Earnings-Interview-Q{q}-{yyyy}.pdf",
-    "NFLX-Q{q}-{yyyy}-Earnings-Interview.pdf",
+# Dated URL templates (current layout). Probed first when release_date is provided.
+# Available context vars: {year}, {q}, {yy}, {yyyy}, {date}, {mon}, {dd}.
+_URL_TEMPLATES_DATED: tuple[str, ...] = (
+    "https://s22.q4cdn.com/959853165/files/doc_events/{yyyy}/{mon}/{dd}/netflix-inc-usa_earnings-call_{date}_english-1.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_events/{yyyy}/{mon}/{dd}/netflix-inc-usa_earnings-call_{date}_english.pdf",
 )
 
 _USER_AGENT = "cas.brag/0.1 (Netflix transcript ingest; +https://github.com/danielwipert/cas.brag)"
 _TIMEOUT = 30
 
 
-def _candidate_urls(year: int, quarter: int) -> list[str]:
+def _candidate_urls(
+    year: int, quarter: int, release_date: date | None = None
+) -> list[str]:
     yy = str(year)[-2:]
     yyyy = str(year)
     urls: list[str] = []
-    for tmpl in _FILENAME_PATTERNS:
-        fname = tmpl.format(q=quarter, yy=yy, yyyy=yyyy)
-        urls.append(f"{Q4CDN_BASE}/{year}/q{quarter}/{fname}")
+    if release_date is not None:
+        ctx = {
+            "year": year,
+            "q": quarter,
+            "yy": yy,
+            "yyyy": yyyy,
+            "date": release_date.isoformat(),
+            "mon": release_date.strftime("%b"),
+            "dd": f"{release_date.day:02d}",
+        }
+        for tmpl in _URL_TEMPLATES_DATED:
+            urls.append(tmpl.format(**ctx))
+    for tmpl in _URL_TEMPLATES_DATEFREE:
+        urls.append(tmpl.format(year=year, q=quarter, yy=yy, yyyy=yyyy))
     return urls
 
 
-def discover_transcript_url(year: int, quarter: int) -> str:
-    """Return the first candidate URL that responds 200 to a HEAD request."""
+def discover_transcript_url(
+    year: int, quarter: int, *, release_date: date | None = None
+) -> str:
+    """Return the first candidate URL that responds 200 to a HEAD request.
+
+    When ``release_date`` is supplied (typically the 8-K Item 2.02 filing
+    date for the corresponding earnings release), the current
+    ``/doc_events/{YYYY}/{Mon}/{DD}/`` layout is probed first."""
     headers = {"User-Agent": _USER_AGENT}
     last_error: Exception | None = None
-    for url in _candidate_urls(year, quarter):
+    candidates = _candidate_urls(year, quarter, release_date=release_date)
+    for url in candidates:
         try:
             r = requests.head(url, headers=headers, timeout=_TIMEOUT, allow_redirects=True)
             if r.status_code == 200:
@@ -60,14 +88,20 @@ def discover_transcript_url(year: int, quarter: int) -> str:
             last_error = e
     raise LookupError(
         f"no q4cdn transcript candidate URL responded 200 for {year}Q{quarter}; "
-        f"tried {len(_FILENAME_PATTERNS)} patterns. Last error: {last_error!r}"
+        f"tried {len(candidates)} patterns. Last error: {last_error!r}"
     )
 
 
-def fetch_transcript(year: int, quarter: int, *, url: str | None = None) -> bytes:
+def fetch_transcript(
+    year: int,
+    quarter: int,
+    *,
+    url: str | None = None,
+    release_date: date | None = None,
+) -> bytes:
     """Download a Netflix earnings transcript PDF. Returns the raw PDF bytes."""
     if url is None:
-        url = discover_transcript_url(year, quarter)
+        url = discover_transcript_url(year, quarter, release_date=release_date)
     headers = {"User-Agent": _USER_AGENT}
     r = requests.get(url, headers=headers, timeout=_TIMEOUT)
     r.raise_for_status()
