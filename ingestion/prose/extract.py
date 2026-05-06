@@ -29,7 +29,17 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 from typing import Iterable, Iterator
+
+from agents.llm_client import LLMError, OpenRouterClient
+from ingestion.prose.extractor_prompt import (
+    SYSTEM_PROMPT,
+    ChunkContext,
+    build_user_message,
+)
+from schemas.enums import FactType
+from schemas.records import ChunkRecord, FactRecord
 
 _DEBUG_ANCHORS = os.environ.get("BRAG_DEBUG_ANCHORS", "").lower() in ("1", "true", "yes")
 _WS_RE = re.compile(r"\s+")
@@ -191,15 +201,6 @@ def _whitespace_normalized_locate(anchor: str, chunk_text: str) -> str | None:
     end_orig = orig_indices[end]
     return chunk_text[start_orig : end_orig + 1]
 
-from agents.llm_client import LLMError, OpenRouterClient
-from ingestion.prose.extractor_prompt import (
-    SYSTEM_PROMPT,
-    ChunkContext,
-    build_user_message,
-)
-from schemas.enums import FactType
-from schemas.records import ChunkRecord, FactRecord
-
 
 _PROSE_FACT_TYPES: frozenset[str] = frozenset(
     {
@@ -241,6 +242,12 @@ class FactIdMinter:
         fid = f"F-PROSE-{self._next:06d}"
         self._next += 1
         return fid
+
+    def rollback(self) -> None:
+        """Return the most recently minted ID to the pool. Used when a
+        validation step rejects the fact the ID was reserved for, so kept
+        IDs stay contiguous."""
+        self._next -= 1
 
     @property
     def count(self) -> int:
@@ -368,8 +375,7 @@ def extract_facts_from_chunk(
             raw, chunk_text=chunk_text, ctx=ctx, fact_id=fid, stats=stats
         )
         if rec is None:
-            # Roll back the unused ID so kept IDs stay contiguous.
-            minter._next -= 1
+            minter.rollback()
             if reason == "anchor":
                 stats.n_dropped_anchor += 1
             elif reason == "financial_metric":
@@ -442,8 +448,6 @@ def extract_facts_from_document(
 
 
 def save_facts_jsonl(facts: Iterable[FactRecord], path) -> None:
-    from pathlib import Path
-
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w", encoding="utf-8") as f:
@@ -452,8 +456,6 @@ def save_facts_jsonl(facts: Iterable[FactRecord], path) -> None:
 
 
 def load_facts_jsonl(path) -> list[FactRecord]:
-    from pathlib import Path
-
     p = Path(path)
     out: list[FactRecord] = []
     with p.open("r", encoding="utf-8") as f:

@@ -36,3 +36,4 @@ Thumbs.db
 
 # Claude Code per-user permission settings (team settings.json is fine to commit).
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
