@@ -28,6 +28,7 @@ from ingestion.transcripts.list_transcripts import list_netflix_transcripts
 
 
 MANIFEST_PATH = Path("data/raw/document_manifest.json")
+TRANSCRIPTS_DIR = Path("data/raw/transcripts")
 
 
 def parse_args() -> argparse.Namespace:
@@ -129,6 +130,25 @@ def main() -> None:
             for t in missing:
                 print(f"    - {t['document_id']}")
 
+    # Wire up local transcript files. Any PDF in data/raw/transcripts/ named
+    # like {document_id}.pdf becomes the source of truth for that quarter,
+    # regardless of whether the URL was also discovered. Block 6b reads
+    # local_path when present and falls back to url otherwise.
+    n_local = 0
+    if TRANSCRIPTS_DIR.exists():
+        local_pdfs = {p.stem: p for p in TRANSCRIPTS_DIR.glob("*.pdf")}
+        for t in transcripts:
+            local = local_pdfs.get(t["document_id"])
+            if local is None:
+                t["local_path"] = None
+                continue
+            t["local_path"] = str(local).replace("\\", "/")
+            t["status"] = "local"
+            n_local += 1
+    else:
+        for t in transcripts:
+            t.setdefault("local_path", None)
+
     manifest = {
         "filings": filings,
         "transcripts": transcripts,
@@ -136,8 +156,11 @@ def main() -> None:
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"\nManifest -> {MANIFEST_PATH}")
+    n_url_only = sum(1 for t in transcripts if t.get("status") == "discovered" and not t.get("local_path"))
+    n_missing = sum(1 for t in transcripts if t.get("status") not in ("discovered", "local"))
     print(
         f"Total: {len(filings)} filings + {len(transcripts)} transcripts "
+        f"({n_local} local, {n_url_only} url-only, {n_missing} missing) "
         f"= {len(filings) + len(transcripts)} documents"
     )
 
