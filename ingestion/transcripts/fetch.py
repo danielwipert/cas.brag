@@ -21,7 +21,13 @@ from pathlib import Path
 import requests
 from pypdf import PdfReader
 
-# Date-free URL templates (older layout). Probed when no release_date is known.
+# Three URL conventions Netflix has used on q4cdn, all under the
+# /doc_financials/ tree (the /doc_events/ layout was a temporary mirror
+# for at least one quarter in 2024 and we keep it as a fallback). The
+# correct convention for any given quarter is empirically discovered
+# per (year, quarter); patterns are probed in order, first 200 wins.
+
+# Date-free URL templates — probed only when no release_date is known.
 _URL_TEMPLATES_DATEFREE: tuple[str, ...] = (
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/FINAL-Q{q}-{yy}-Earnings-Interview-Transcript.pdf",
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/FINAL-Q{q}-{yyyy}-Earnings-Interview-Transcript.pdf",
@@ -34,11 +40,22 @@ _URL_TEMPLATES_DATEFREE: tuple[str, ...] = (
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/NFLX-Q{q}-{yyyy}-Earnings-Interview.pdf",
 )
 
-# Dated URL templates (current layout). Probed first when release_date is provided.
-# Available context vars: {year}, {q}, {yy}, {yyyy}, {date}, {mon}, {dd}.
+# Dated URL templates — probed when release_date is provided.
+# Context vars: {year} (fiscal year), {q} (quarter int), {yy}, {yyyy} (release year),
+# {date} (YYYY-MM-DD release), {mon} (Jan/Apr/Jul/Oct), {dd} (zero-padded), {dd_no_pad}.
 _URL_TEMPLATES_DATED: tuple[str, ...] = (
+    # Modern era (~2024+): "Netflix-Inc-_Earnings-Call_{date}_English-1.pdf"
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc-_Earnings-Call_{date}_English-1.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc-_Earnings-Call_{date}_English.pdf",
+    # 2018-~2023 era: "Netflix,-Inc.,-Q{q}-{yyyy}-Earnings-Call,-{Mon}-{D},-{yyyy}.pdf"
+    # (commas are literal in the URL; day appears two-digit in samples)
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd}-{rel_year}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd},-{rel_year}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd_no_pad},-{rel_year}.pdf",
+    # Pre-2018 era: "/quarterly_reports/{year}/q{q}/NFLX-USQ_Transcript_{date}.pdf"
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-USQ_Transcript_{date}.pdf",
+    # 2024 Q1 outlier (kept as last-resort fallback)
     "https://s22.q4cdn.com/959853165/files/doc_events/{yyyy}/{mon}/{dd}/netflix-inc-usa_earnings-call_{date}_english-1.pdf",
-    "https://s22.q4cdn.com/959853165/files/doc_events/{yyyy}/{mon}/{dd}/netflix-inc-usa_earnings-call_{date}_english.pdf",
 )
 
 _USER_AGENT = "cas.brag/0.1 (Netflix transcript ingest; +https://github.com/danielwipert/cas.brag)"
@@ -53,13 +70,15 @@ def _candidate_urls(
     urls: list[str] = []
     if release_date is not None:
         ctx = {
-            "year": year,
+            "year": year,  # fiscal-period year (matches the /q{N}/ path segment)
             "q": quarter,
             "yy": yy,
             "yyyy": yyyy,
+            "rel_year": release_date.year,  # release calendar year (Q4 release = next year)
             "date": release_date.isoformat(),
             "mon": release_date.strftime("%b"),
             "dd": f"{release_date.day:02d}",
+            "dd_no_pad": str(release_date.day),
         }
         for tmpl in _URL_TEMPLATES_DATED:
             urls.append(tmpl.format(**ctx))
