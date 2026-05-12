@@ -47,15 +47,30 @@ _URL_TEMPLATES_DATED: tuple[str, ...] = (
     # Modern era (~2024+): "Netflix-Inc-_Earnings-Call_{date}_English-1.pdf"
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc-_Earnings-Call_{date}_English-1.pdf",
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc-_Earnings-Call_{date}_English.pdf",
-    # 2018-~2023 era: "Netflix,-Inc.,-Q{q}-{yyyy}-Earnings-Call,-{Mon}-{D},-{yyyy}.pdf"
-    # (commas are literal in the URL; day appears two-digit in samples)
+    # ~2020-~2023 era, comma variant: "Netflix,-Inc.,-Q{q}-{yyyy}-Earnings-Call,-{Mon}-{DD},-{yyyy}.pdf"
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd}-{rel_year}.pdf",
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd},-{rel_year}.pdf",
     "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix,-Inc.,-Q{q}-{rel_year}-Earnings-Call,-{mon}-{dd_no_pad},-{rel_year}.pdf",
-    # Pre-2018 era: "/quarterly_reports/{year}/q{q}/NFLX-USQ_Transcript_{date}.pdf"
+    # Same era, dash-only variant (no commas): "Netflix-Inc.-Q{q}-{yyyy}-Earnings-Call-{Mon}-{DD}-{yyyy}.pdf"
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc.-Q{q}-{rel_year}-Earnings-Call-{mon}-{dd}-{rel_year}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/{year}/q{q}/Netflix-Inc.-Q{q}-{rel_year}-Earnings-Call-{mon}-{dd_no_pad}-{rel_year}.pdf",
+    # ~2019 era under /quarterly_reports/, dash-only with -(1) suffix
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/Netflix-Inc.-Q{q}-{rel_year}-Earnings-Call-{mon}-{dd}-{rel_year}-(1).pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/Netflix-Inc.-Q{q}-{rel_year}-Earnings-Call-{mon}-{dd}-{rel_year}.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/Netflix-Inc.-Q{q}-{rel_year}-Earnings-Call-{mon}-{dd_no_pad}-{rel_year}-(1).pdf",
+    # ~2016-2018 era: "/quarterly_reports/.../NFLX-USQ_Transcript_{date}.pdf"
     "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-USQ_Transcript_{date}.pdf",
-    # 2024 Q1 outlier (kept as last-resort fallback)
+    # Pre-2016 timestamped era: "NFLX-Transcript-{date}T{HH}_{MM}.pdf"
+    # The HH_MM is the actual call time; we probe a few canonical times.
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-Transcript-{date}T21_00.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-Transcript-{date}T22_00.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-Transcript-{date}T20_00.pdf",
+    "https://s22.q4cdn.com/959853165/files/doc_financials/quarterly_reports/{year}/q{q}/NFLX-Transcript-{date}T18_00.pdf",
+    # 2024 Q1 outlier — /doc_events/ with descriptive filename
     "https://s22.q4cdn.com/959853165/files/doc_events/{yyyy}/{mon}/{dd}/netflix-inc-usa_earnings-call_{date}_english-1.pdf",
+    # NOTE: some 2024+ quarters use /doc_events/{yyyy}/{Mon}/{DD}/netflix-inc-usa-{UUID}.pdf
+    # The UUID is unguessable — those quarters need manual URL entry via
+    # scripts/set_transcript_url.py.
 )
 
 _USER_AGENT = "cas.brag/0.1 (Netflix transcript ingest; +https://github.com/danielwipert/cas.brag)"
