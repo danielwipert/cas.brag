@@ -159,13 +159,23 @@ def save_primary_html(filing: edgar.Filing, dest: Path) -> Path:
 
 
 def save_xbrl(filing: edgar.Filing, dest: Path) -> Path | None:
-    """If the filing has an XBRL instance, save the raw XBRL XML to disk."""
+    """If the filing has an XBRL instance, save the raw XBRL XML to disk.
+
+    Two attachment-shape eras are covered:
+      - 2019+: iXBRL — the instance ships as ``*_htm.xml`` (matched by name).
+      - Pre-2019: legacy XBRL — the instance ships as ``nflx-YYYYMMDD.xml``
+        with description "XBRL INSTANCE DOCUMENT" (matched by description,
+        to disambiguate from the four linkbase XMLs which all share the
+        same ``.xml`` extension but describe themselves as "XBRL TAXONOMY
+        EXTENSION ... LINKBASE DOCUMENT").
+    """
     dest.parent.mkdir(parents=True, exist_ok=True)
-    # The simplest reliable XBRL bytes: find the .xml attachment matching the instance.
     try:
         for att in filing.attachments:
             name = (getattr(att, "document", "") or "").lower()
-            if name.endswith("_htm.xml") or name.endswith(".xml") and "xbrl" in name:
+            desc = (getattr(att, "description", "") or "").upper()
+            is_instance = name.endswith("_htm.xml") or "XBRL INSTANCE" in desc
+            if is_instance:
                 content = att.content
                 if isinstance(content, bytes):
                     dest.write_bytes(content)
