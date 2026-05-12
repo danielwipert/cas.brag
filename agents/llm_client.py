@@ -176,7 +176,19 @@ class OpenRouterClient:
                     req, timeout=self.request_timeout
                 ) as resp:
                     raw = resp.read().decode("utf-8")
+                try:
                     return json.loads(raw)
+                except json.JSONDecodeError as e:
+                    # 200 OK but body is not JSON — typically a transient
+                    # upstream proxy hiccup (gateway HTML page, truncated
+                    # response). Treat like a 5xx and retry with backoff.
+                    last_err = LLMError(
+                        f"OpenRouter non-JSON 200 body on {path} "
+                        f"(decode error: {e}): {raw[:300]!r}"
+                    )
+                    if attempt == self.max_retries:
+                        raise last_err
+                    sleep = self._compute_sleep(attempt, retry_after=None)
             except urllib.error.HTTPError as e:
                 err_body = ""
                 try:
