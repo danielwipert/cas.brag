@@ -29,6 +29,22 @@ NETFLIX_CIK = "0001065280"
 TENK_RETAINED_ITEMS = ("Item 1", "Item 1A", "Item 7", "Item 7A")
 TENQ_RETAINED_ITEMS = ("Item 2", "Item 3", "Item 1A")
 
+# Part assignments per SEC layout — needed for the get_item_with_part fallback
+# when edgartools' new parser doesn't surface an item via .sections (older
+# Netflix filings, pre-2019). For 10-K: Items 1-4 sit in Part I, Items 5+ in
+# Part II. For 10-Q: Part I is the financial info, Part II is "other".
+_TENK_ITEM_PART: dict[str, str] = {
+    "Item 1": "Part I",
+    "Item 1A": "Part I",
+    "Item 7": "Part II",
+    "Item 7A": "Part II",
+}
+_TENQ_ITEM_PART: dict[str, str] = {
+    "Item 2": "Part I",
+    "Item 3": "Part I",
+    "Item 1A": "Part II",
+}
+
 _CONFIGURED = False
 
 
@@ -175,9 +191,11 @@ def extract_sections(filing: edgar.Filing) -> dict[str, str]:
     form = filing.form.upper()
     obj = filing.obj()
 
-    if form == "10-K":
+    # Amendments (10-K/A, 10-Q/A) share the base form's item structure.
+    base_form = form.split("/")[0]
+    if base_form == "10-K":
         wanted = TENK_RETAINED_ITEMS
-    elif form == "10-Q":
+    elif base_form == "10-Q":
         wanted = TENQ_RETAINED_ITEMS
     else:
         raise ValueError(
@@ -190,17 +208,30 @@ def extract_sections(filing: edgar.Filing) -> dict[str, str]:
     available_keys: set[str] = set()
     if sections_map is not None and hasattr(sections_map, "keys"):
         available_keys = set(sections_map.keys())
+    part_map = _TENK_ITEM_PART if base_form == "10-K" else _TENQ_ITEM_PART
 
     for item in wanted:
-        if item not in available_keys:
-            continue
-        try:
-            section = sections_map[item]
-            text_attr = getattr(section, "text", None)
-            text = text_attr() if callable(text_attr) else text_attr
-        except Exception:
-            text = None
-        if text and len(str(text).strip()) > 0:
+        text: str | None = None
+        if item in available_keys:
+            try:
+                section = sections_map[item]
+                text_attr = getattr(section, "text", None)
+                text = text_attr() if callable(text_attr) else text_attr
+            except Exception:
+                text = None
+        # Older Netflix filings (pre-2019) often expose only a partial
+        # sections mapping. Fall back to the legacy get_item_with_part
+        # path, which finds Item 1/1A/7/7A on older 10-Ks even when the
+        # new parser doesn't. (Legacy fallback is deprecated for removal
+        # in edgartools v6.0 — when we upgrade, revisit this.)
+        if (not text or not str(text).strip()) and item in part_map:
+            try:
+                legacy = obj.get_item_with_part(part_map[item], item)
+            except Exception:
+                legacy = None
+            if legacy and str(legacy).strip():
+                text = legacy
+        if text and str(text).strip():
             sections[item] = str(text)
 
     # Footnote narrative — search the full document text for the standard

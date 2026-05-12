@@ -77,7 +77,13 @@ def list_netflix_filings(
     out: list[dict] = []
 
     # ``get_filings(form="10-K")`` also returns 10-K/A amendments. Collect
-    # everything per (form_base, period_of_report) and keep the latest.
+    # everything per (form_base, period_of_report). Selection rule:
+    #   1. Prefer original filings over amendments (/A) — amendments are
+    #      almost always partial (Item 11 exec-comp corrections, etc.) and
+    #      contain only the amended item, not the full document text. The
+    #      original 10-K/10-Q is the canonical narrative for BRAG ingest.
+    #   2. Within the same form-class (both original or both amendment),
+    #      keep the most recently filed entry.
     periodic: dict[tuple[str, str], dict] = {}
     for form_base in ("10-K", "10-Q"):
         for f in company.get_filings(form=form_base):
@@ -108,8 +114,15 @@ def list_netflix_filings(
             }
             key = (form_base, por_str)
             prior = periodic.get(key)
-            if prior is None or fd > prior["filing_date"]:
+            if prior is None:
                 periodic[key] = entry
+                continue
+            prior_amend = prior["form"].endswith("/A")
+            this_amend = entry["form"].endswith("/A")
+            if prior_amend and not this_amend:
+                periodic[key] = entry  # original wins over the amendment we had
+            elif prior_amend == this_amend and fd > prior["filing_date"]:
+                periodic[key] = entry  # same class, latest filing_date wins
     out.extend(periodic.values())
 
     # 8-K letter entries can collide on document_id when multiple Item 2.02

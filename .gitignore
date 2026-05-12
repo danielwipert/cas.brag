@@ -9,6 +9,7 @@ planning/
 # Corpus content stays local (one-time ingestion artifacts).
 data/raw/
 data/dev_subset/
+data/corpus/
 data/chunk_store/
 data/fact_store/
 data/logs/
