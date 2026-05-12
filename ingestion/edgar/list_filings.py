@@ -112,6 +112,13 @@ def list_netflix_filings(
                 periodic[key] = entry
     out.extend(periodic.values())
 
+    # 8-K letter entries can collide on document_id when multiple Item 2.02
+    # filings land in the same earnings month (e.g. Jan 2019 had a Jan-3
+    # 8-K plus the Jan-17 actual earnings release — both fall in fiscal
+    # period 2018Q4). Mirror the periodic-form rule: keep the latest
+    # filing_date per (document_id). letter_unmapped entries get a
+    # per-accession document_id and never collide, so they pass through.
+    letters: dict[str, dict] = {}
     for f in company.get_filings(form="8-K"):
         fd = str(f.filing_date)
         if fd < filed_on_or_after or fd > filed_on_or_before:
@@ -124,8 +131,6 @@ def list_netflix_filings(
             por_date = date.fromisoformat(fd)
         announced = _8k_announces_period(por_date)
         if announced is None:
-            # 8-K Item 2.02 in a non-earnings month — keep it in the manifest
-            # but with no fiscal_period so the manifest builder can flag it.
             out.append(
                 {
                     "document_id": f"nflx-8k-{f.accession_number}",
@@ -143,18 +148,20 @@ def list_netflix_filings(
         doc_id = assign_document_id(
             form="8-K", period=f"{year}Q{qtr}", document_kind="letter"
         )
-        out.append(
-            {
-                "document_id": doc_id,
-                "source": "edgar",
-                "form": "8-K",
-                "document_kind": "letter",
-                "accession": f.accession_number,
-                "filing_date": fd,
-                "period_of_report": str(f.period_of_report),
-                "fiscal_period": f"{year}Q{qtr}",
-            }
-        )
+        entry = {
+            "document_id": doc_id,
+            "source": "edgar",
+            "form": "8-K",
+            "document_kind": "letter",
+            "accession": f.accession_number,
+            "filing_date": fd,
+            "period_of_report": str(f.period_of_report),
+            "fiscal_period": f"{year}Q{qtr}",
+        }
+        prior = letters.get(doc_id)
+        if prior is None or fd > prior["filing_date"]:
+            letters[doc_id] = entry
+    out.extend(letters.values())
 
     out.sort(key=lambda d: (d["filing_date"], d["form"], d["document_id"]))
     return out
