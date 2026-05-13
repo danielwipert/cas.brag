@@ -15,6 +15,7 @@ Generator) will pass their own model slug.
 """
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import random
@@ -201,8 +202,13 @@ class OpenRouterClient:
                 if e.code not in _RETRY_STATUSES or attempt == self.max_retries:
                     raise last_err
                 sleep = self._compute_sleep(attempt, retry_after=e.headers.get("Retry-After"))
-            except (urllib.error.URLError, TimeoutError) as e:
-                last_err = LLMError(f"Network error on {path}: {e}")
+            except (urllib.error.URLError, http.client.HTTPException, OSError) as e:
+                # OSError covers ConnectionResetError, BrokenPipeError,
+                # ConnectionAbortedError, socket.timeout, etc. — anything
+                # the socket layer raises when the upstream connection
+                # drops mid-stream. http.client.HTTPException covers
+                # IncompleteRead / BadStatusLine on truncated responses.
+                last_err = LLMError(f"Network error on {path}: {type(e).__name__}: {e}")
                 if attempt == self.max_retries:
                     raise last_err
                 sleep = self._compute_sleep(attempt, retry_after=None)
