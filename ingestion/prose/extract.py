@@ -27,6 +27,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -326,21 +327,18 @@ def _build_fact_record(
     return rec, None
 
 
-def extract_facts_from_chunk(
+def _llm_call_for_chunk(
     chunk_text: str,
     ctx: ChunkContext,
     *,
     client: OpenRouterClient,
-    minter: FactIdMinter,
-    stats: ExtractionStats,
-    model: str | None = None,
-    max_tokens: int = 4000,
-) -> list[FactRecord]:
-    """Call the LLM on one chunk and return the validated FactRecords.
-
-    Side effects: increments ``stats`` counters, mints fact IDs.
-    """
-    stats.n_chunks += 1
+    model: str | None,
+    max_tokens: int,
+) -> list[dict] | None:
+    """Pure LLM call for one chunk. Returns the raw list of fact dicts
+    (or ``[]`` if the model returned nothing) on success, or ``None`` if
+    the call raised LLMError after all retries. No side effects — safe
+    to run concurrently from a thread pool."""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": build_user_message(chunk_text, ctx)},
@@ -350,20 +348,29 @@ def extract_facts_from_chunk(
             messages, model=model, max_tokens=max_tokens
         )
     except LLMError as e:
-        stats.n_llm_errors += 1
         if _DEBUG_ANCHORS:
             print(f"\n  [llm_error] {ctx.chunk_id}: {e}")
-        return []
+        return None
 
     if isinstance(parsed, list):
-        raw_facts = parsed
-    elif isinstance(parsed, dict):
-        raw_facts = parsed.get("facts", [])
-        if not isinstance(raw_facts, list):
-            raw_facts = []
-    else:
-        raw_facts = []
+        return parsed
+    if isinstance(parsed, dict):
+        items = parsed.get("facts", [])
+        return items if isinstance(items, list) else []
+    return []
 
+
+def _process_raw_facts(
+    raw_facts: list[dict],
+    *,
+    chunk_text: str,
+    ctx: ChunkContext,
+    minter: FactIdMinter,
+    stats: ExtractionStats,
+) -> list[FactRecord]:
+    """Sequential post-processing: mint IDs in order, validate, update
+    stats. Not thread-safe — call only from the main thread, in chunk
+    order, so fact_ids stay deterministic."""
     stats.n_raw_facts += len(raw_facts)
     out: list[FactRecord] = []
     for raw in raw_facts:
@@ -388,7 +395,36 @@ def extract_facts_from_chunk(
                 stats.n_dropped_other += 1
             continue
         out.append(rec)
+    return out
 
+
+def extract_facts_from_chunk(
+    chunk_text: str,
+    ctx: ChunkContext,
+    *,
+    client: OpenRouterClient,
+    minter: FactIdMinter,
+    stats: ExtractionStats,
+    model: str | None = None,
+    max_tokens: int = 4000,
+) -> list[FactRecord]:
+    """Call the LLM on one chunk and return the validated FactRecords.
+
+    Side effects: increments ``stats`` counters, mints fact IDs.
+    Single-chunk convenience wrapper around _llm_call_for_chunk +
+    _process_raw_facts. Use ``extract_facts_from_document`` with
+    ``max_workers > 1`` to parallelize at the doc level instead.
+    """
+    stats.n_chunks += 1
+    raw_facts = _llm_call_for_chunk(
+        chunk_text, ctx, client=client, model=model, max_tokens=max_tokens
+    )
+    if raw_facts is None:
+        stats.n_llm_errors += 1
+        return []
+    out = _process_raw_facts(
+        raw_facts, chunk_text=chunk_text, ctx=ctx, minter=minter, stats=stats
+    )
     if out:
         stats.n_chunks_with_facts += 1
     stats.n_kept += len(out)
@@ -411,6 +447,8 @@ def extract_facts_from_document(
     stats: ExtractionStats,
     model: str | None = None,
     progress: bool = True,
+    max_workers: int = 1,
+    max_tokens: int = 4000,
 ) -> list[FactRecord]:
     """Iterate over a document's chunks, extract facts, accumulate.
 
@@ -420,29 +458,86 @@ def extract_facts_from_document(
     speaker name parsed by the upstream transcript splitter (or a
     placeholder if multi-speaker — the LLM is instructed to identify the
     actual speaker from inline labels).
+
+    ``max_workers``: when > 1, fan out the LLM calls across that many
+    threads (LLM calls are network-I/O bound, so threads are fine despite
+    the GIL). Validation and fact_id minting still happen sequentially in
+    chunk order, so fact_ids are deterministic regardless of completion
+    order. Default 1 preserves the legacy sequential behavior.
     """
-    out: list[FactRecord] = []
     chunks = list(chunks)
-    for i, ch in enumerate(chunks, start=1):
-        ctx = ChunkContext(
+    contexts = [
+        ChunkContext(
             chunk_id=ch.chunk_id,
             document_id=meta.document_id,
             section=ch.section,
             asserter_default=meta.asserter_default,
             assertion_date=meta.assertion_date,
         )
-        if progress:
-            print(
-                f"  [{i}/{len(chunks)}] {ch.chunk_id} "
-                f"({ch.word_count} words)... ",
-                end="",
-                flush=True,
+        for ch in chunks
+    ]
+
+    if max_workers <= 1:
+        # Legacy sequential path — verbose progress, one chunk at a time.
+        out: list[FactRecord] = []
+        for i, (ch, ctx) in enumerate(zip(chunks, contexts), start=1):
+            if progress:
+                print(
+                    f"  [{i}/{len(chunks)}] {ch.chunk_id} "
+                    f"({ch.word_count} words)... ",
+                    end="",
+                    flush=True,
+                )
+            recs = extract_facts_from_chunk(
+                ch.text, ctx, client=client, minter=minter, stats=stats,
+                model=model, max_tokens=max_tokens,
             )
-        recs = extract_facts_from_chunk(
-            ch.text, ctx, client=client, minter=minter, stats=stats, model=model
+            if progress:
+                print(f"{len(recs)} facts")
+            out.extend(recs)
+        return out
+
+    # Concurrent path. Phase 1: fan out LLM calls; Phase 2: walk results
+    # in chunk order to validate + mint IDs deterministically.
+    raw_results: list[list[dict] | None] = [None] * len(chunks)
+
+    def _worker(idx: int) -> tuple[int, list[dict] | None]:
+        return idx, _llm_call_for_chunk(
+            chunks[idx].text, contexts[idx],
+            client=client, model=model, max_tokens=max_tokens,
         )
-        if progress:
-            print(f"{len(recs)} facts")
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = [ex.submit(_worker, i) for i in range(len(chunks))]
+        completed = 0
+        for fut in as_completed(futures):
+            try:
+                idx, raw = fut.result()
+            except Exception as e:
+                # Defensive: _llm_call_for_chunk catches LLMError already.
+                # Anything else (unexpected) is logged and treated as a
+                # silent LLM error so the rest of the doc keeps going.
+                if _DEBUG_ANCHORS:
+                    print(f"\n  [worker_error] {type(e).__name__}: {e}")
+                completed += 1
+                continue
+            raw_results[idx] = raw
+            completed += 1
+            if progress and (completed % 5 == 0 or completed == len(chunks)):
+                print(f"  [{completed}/{len(chunks)}] llm calls done", flush=True)
+
+    out: list[FactRecord] = []
+    for ch, ctx, raw in zip(chunks, contexts, raw_results):
+        stats.n_chunks += 1
+        if raw is None:
+            stats.n_llm_errors += 1
+            continue
+        recs = _process_raw_facts(
+            raw, chunk_text=ch.text, ctx=ctx, minter=minter, stats=stats,
+        )
+        if recs:
+            stats.n_chunks_with_facts += 1
+        stats.n_kept += len(recs)
         out.extend(recs)
     return out
 

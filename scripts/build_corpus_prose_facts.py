@@ -123,6 +123,14 @@ def parse_args() -> argparse.Namespace:
         help="Override LLM model slug (default: deepseek/deepseek-chat).",
     )
     p.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Number of concurrent LLM calls per document. 1 = sequential "
+             "(legacy). 8 is a reasonable default for the corpus run "
+             "(~5x faster wall time, well under OpenRouter rate limits).",
+    )
+    p.add_argument(
         "--concatenate-only",
         action="store_true",
         help="Skip extraction; only merge existing per-doc JSONLs into the "
@@ -314,7 +322,8 @@ def main() -> None:
         return
 
     print(f"\nProcessing {len(to_process)} document(s); model="
-          f"{args.model or 'deepseek/deepseek-chat (client default)'}; smoke={args.smoke}")
+          f"{args.model or 'deepseek/deepseek-chat (client default)'}; "
+          f"smoke={args.smoke}; workers={args.workers}")
     client = OpenRouterClient()
 
     aggregate_stats = ExtractionStats()
@@ -337,6 +346,7 @@ def main() -> None:
                 client=client, minter=minter, stats=per_doc_stats,
                 model=args.model,
                 progress=True,
+                max_workers=args.workers,
             )
         except KeyboardInterrupt:
             print("\nInterrupted — partial in-flight doc not saved. "
