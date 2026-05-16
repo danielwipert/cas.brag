@@ -92,6 +92,11 @@ _COUNT_UNITS: frozenset[str] = frozenset(
     {"shares", "pure", "membership", "segment"}
 )
 
+# Per-share-like units. SEC XBRL filings use both "USDPerShare" (older
+# convention) and "USDPershares" (what our parser emits when it joins
+# numerator "USD" with denominator "shares" via the "Per" infix).
+_PER_SHARE_UNITS: frozenset[str] = frozenset({"USDPerShare", "USDPershares"})
+
 
 def _format_anchor(fact: XBRLFact) -> str:
     """Format the value as it appears in the rendered HTML table cell.
@@ -99,8 +104,11 @@ def _format_anchor(fact: XBRLFact) -> str:
     Examples (for unit=USD, decimals=-3):
         9824703000      -> "$9,824,703"
         2321101000      -> "$2,321,101"
-    For EPS (unit=USDPerShare, decimals=2):
+       -48330000        -> "$(48,330)"   (negatives use parens, not minus)
+    For EPS (unit=USDPerShare or USDPershares, decimals=2):
         5.40            -> "$5.40"
+        0.40            -> "$0.40"
+       -0.05            -> "$(0.05)"
     For shares / memberships (count-like units, decimals=-3):
         428000000       -> "428,000"
         84803000        -> "84,803"
@@ -109,8 +117,12 @@ def _format_anchor(fact: XBRLFact) -> str:
     unit = fact.unit
     if unit == "USD":
         displayed = value / _displayed_scale(fact.decimals)
+        if displayed < 0:
+            return f"$({abs(displayed):,.0f})"
         return f"${displayed:,.0f}"
-    if unit == "USDPerShare":
+    if unit in _PER_SHARE_UNITS:
+        if value < 0:
+            return f"$({abs(value):.2f})"
         return f"${value:.2f}"
     if unit in _COUNT_UNITS:
         displayed = value / _displayed_scale(fact.decimals)
@@ -142,7 +154,7 @@ def _format_for_claim(fact: XBRLFact) -> str:
         if v >= 1e3:
             return f"{sign}${v / 1e3:,.0f} thousand"
         return f"{sign}${v:,.2f}"
-    if unit == "USDPerShare":
+    if unit in _PER_SHARE_UNITS:
         return f"${value:.2f} per share"
     if unit == "shares":
         v = abs(value)
