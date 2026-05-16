@@ -83,6 +83,10 @@ def embed_facts(
     return [list(map(float, v)) for v in embs]
 
 
+# Chroma's Rust backend caps a single .add() at ~5461 rows; chunk below that.
+_CHROMA_ADD_BATCH = 5000
+
+
 def build_fact_store(
     facts: Sequence[FactRecord],
     *,
@@ -101,12 +105,17 @@ def build_fact_store(
     coll = client.create_collection(
         name=COLLECTION_NAME, metadata={"hnsw:space": "cosine"}
     )
-    coll.add(
-        ids=[f.fact_id for f in facts],
-        documents=[f.claim for f in facts],
-        embeddings=embeddings,
-        metadatas=[_metadata_for(f) for f in facts],
-    )
+    ids = [f.fact_id for f in facts]
+    documents = [f.claim for f in facts]
+    metadatas = [_metadata_for(f) for f in facts]
+    for start in range(0, len(facts), _CHROMA_ADD_BATCH):
+        end = start + _CHROMA_ADD_BATCH
+        coll.add(
+            ids=ids[start:end],
+            documents=documents[start:end],
+            embeddings=embeddings[start:end],
+            metadatas=metadatas[start:end],
+        )
     return {
         "n_facts": len(facts),
         "n_embeddings": len(embeddings),
