@@ -138,6 +138,14 @@ def test_pretend_to_be_rejects() -> None:
     assert not r.passed
 
 
+def test_query_with_its_possessive_passes() -> None:
+    # "its" is a common possessive that legitimate Netflix queries use
+    # ("did Netflix meet its guidance"); must pass the stopword check.
+    r = validate("Did Netflix meet its 2022 paid net adds guidance?")
+    assert r.passed
+    assert r.complexity_tier == ComplexityTier.standard
+
+
 def test_legitimate_use_of_instructions_word_passes() -> None:
     # Don't false-positive on the literal word "instructions" in context.
     r = validate("What instructions does Netflix give its content partners?")

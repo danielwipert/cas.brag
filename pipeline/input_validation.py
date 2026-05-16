@@ -62,6 +62,10 @@ _ENGLISH_STOPWORDS = frozenset({
     "did", "do", "does", "what", "when", "where", "why", "how", "which",
     "this", "that", "these", "those", "with", "by", "from", "at",
     "as", "but", "if", "than", "then",
+    # Pronouns and possessives that show up in legitimate Netflix queries
+    # ("did Netflix meet its guidance", "how does it compare", "their").
+    "it", "its", "their", "they", "them", "we", "us", "our",
+    "all", "more", "most", "any", "some",
 })
 
 # Prompt-injection patterns. Kept conservative — false positives reject
