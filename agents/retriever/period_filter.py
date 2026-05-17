@@ -80,11 +80,29 @@ def filter_by_period(
     candidates: list[ChannelCandidate],
     period_filter: str | None,
 ) -> list[ChannelCandidate]:
-    """Keep only candidates whose period equals ``period_filter``.
+    """Keep only candidates whose period matches ``period_filter``.
 
-    If ``period_filter`` is None, returns the candidates unchanged.
-    Candidates with ``period=None`` are dropped when a filter is set —
-    a period-scoped query should not accept unbounded claims."""
+    Match rules:
+
+    * ``period_filter is None`` — return everything unchanged.
+    * Candidate's intrinsic period equals the filter — keep.
+    * Candidate has ``period=None`` AND its ``source_document``'s
+      derived period equals the filter — keep. This is load-bearing
+      for fact types that are temporally unbounded by extraction
+      design (risk_disclosure, strategic_claim, accounting_policy)
+      but were asserted in a period-anchored document.
+
+    Chunks already carry a doc-derived period from the channels, so
+    the document-fallback branch is a no-op for them in practice."""
     if period_filter is None:
         return candidates
-    return [c for c in candidates if c.period == period_filter]
+    out: list[ChannelCandidate] = []
+    for c in candidates:
+        if c.period == period_filter:
+            out.append(c)
+            continue
+        if c.period is None and c.source_document:
+            doc_period = period_from_document_id(c.source_document)
+            if doc_period == period_filter:
+                out.append(c)
+    return out

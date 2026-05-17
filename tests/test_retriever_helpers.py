@@ -76,9 +76,34 @@ def test_filter_drops_mismatched_period() -> None:
 
 
 def test_filter_drops_none_period_when_filter_set() -> None:
+    # Default _c() helper sets source_document="x" which has no derivable
+    # period — so the document-fallback branch doesn't rescue B here.
     cs = [_c("A", "2024Q3"), _c("B", None)]
     out = filter_by_period(cs, "2024Q3")
     assert [c.candidate_id for c in out] == ["A"]
+
+
+def _c_with_doc(cid: str, period: str | None, source_document: str) -> ChannelCandidate:
+    return ChannelCandidate(
+        candidate_id=cid,
+        source=CandidateSource.fact,
+        score=1.0,
+        source_document=source_document,
+        period=period,
+    )
+
+
+def test_filter_doc_period_fallback_rescues_none_period_fact() -> None:
+    # A risk_disclosure fact with period=None but extracted from
+    # nflx-10k-2022 should be kept when period_filter="FY2022".
+    cs = [
+        _c_with_doc("A", "FY2022", "nflx-10k-2022"),
+        _c_with_doc("B", None, "nflx-10k-2022"),       # rescued
+        _c_with_doc("C", None, "nflx-10k-2021"),       # dropped: wrong year
+        _c_with_doc("D", None, "no-recognized-doc"),   # dropped: not parseable
+    ]
+    out = filter_by_period(cs, "FY2022")
+    assert [c.candidate_id for c in out] == ["A", "B"]
 
 
 # ---------------------------------------------------------------------------
