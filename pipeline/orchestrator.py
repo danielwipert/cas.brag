@@ -28,9 +28,17 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
+from typing import Any
 
 from agents.llm_client import LLMError
 from agents.planner import plan as run_planner
+from agents.refutation.agent import (
+    REFUTATION_FALLBACK_MODEL,
+    REFUTATION_MODEL,
+    RefutationAgentResult,
+    lookup_facts,
+    run_refutation,
+)
 from agents.retriever.retriever import retrieve
 from agents.verifier import verify
 from pipeline.degradation import decide_degradation
@@ -40,15 +48,23 @@ from schemas.enums import (
     ComplexityTier,
     DegradationCause,
     DegradationLevel,
+    EvidenceType,
     PassOrigin,
+    RefutationOverallVerdict,
+    RefutationStrategy,
+    TargetLayer,
     VerifierVerdict,
 )
 from schemas.records import (
     CoverageProgressionEntry,
     EvidenceSlot,
     ExecutionTrace,
+    FactRecord,
     FinalSlotState,
     QueryTraceInfo,
+    RefutationHypothesis,
+    RefutationLoopRecord,
+    RefutationReport,
     RetrievalRecord,
     VerifierOutput,
 )
@@ -84,8 +100,11 @@ def _run_slot(
     ledger: Ledger,
     *,
     verbose: bool,
+    pass_origin: PassOrigin = PassOrigin.verifier_loop,
 ) -> _SlotRun:
-    """Run the iterative Verifier loop for one slot."""
+    """Run the iterative Verifier loop for one slot. ``pass_origin``
+    is stamped on every retrieval; defaults to ``verifier_loop`` for
+    Stage 3, and is set to ``refutation_loop`` by Stage 5 re-entry."""
     max_iter = _MAX_ITER_BY_TIER[tier]
     current_slot = slot
     last_verdict: VerifierOutput | None = None
@@ -97,7 +116,7 @@ def _run_slot(
             current_slot,
             complexity_tier=tier,
             iteration=iteration,
-            pass_origin=PassOrigin.verifier_loop,
+            pass_origin=pass_origin,
             excluded_ids=excluded,
         )
         ledger.add_retrieval(
@@ -152,6 +171,212 @@ def _run_slot(
     if last_verdict:
         run.final_coverage = last_verdict.coverage_score
     return run
+
+
+_PROBE_LOOP_ETYPE: dict[RefutationStrategy, EvidenceType] = {
+    RefutationStrategy.restated_value: EvidenceType.specific_metric,
+    RefutationStrategy.revised_value: EvidenceType.specific_metric,
+    RefutationStrategy.guidance_vs_actual: EvidenceType.specific_metric,
+    RefutationStrategy.later_reversal: EvidenceType.strategic_position,
+    RefutationStrategy.alternative_cause: EvidenceType.causal_explanation,
+    RefutationStrategy.materialization: EvidenceType.risk_disclosure,
+    RefutationStrategy.policy_change: EvidenceType.accounting_policy,
+}
+
+
+@dataclass
+class _RefutationStageResult:
+    report: RefutationReport | None = None
+    retrievals: list[RetrievalRecord] = field(default_factory=list)
+    loop_verdicts: list[VerifierOutput] = field(default_factory=list)
+    loop_records: list[RefutationLoopRecord] = field(default_factory=list)
+    additional_facts: list[FactRecord] = field(default_factory=list)
+    fallback_invoked: bool = False
+    models_used: list[str] = field(default_factory=list)
+    all_resolved: bool = True
+    bypassed: bool = False
+    bypass_reason: str = ""
+    error: str | None = None
+
+
+def _build_loop_slot(
+    h: RefutationHypothesis,
+    refuting_facts: list[FactRecord],
+    iteration: int,
+) -> EvidenceSlot:
+    """Synthetic slot used to verify the refuting position the agent
+    surfaced. The slot's sub_question is the hypothesis text — already
+    phrased as a counter-claim — and key_terms come from the asserter
+    + the refuting facts' claims so BM25 can locate the same evidence
+    the probe found. period_filter is intentionally empty: the
+    refutation is by definition outside the original period."""
+    extra_terms: list[str] = []
+    for rec in refuting_facts[:3]:
+        # Take the first content-bearing tokens from each refuting fact.
+        # Cheap and avoids re-implementing key-term extraction.
+        for tok in rec.claim.split()[:6]:
+            t = tok.strip(".,;:()").lower()
+            if len(t) >= 4 and t not in extra_terms:
+                extra_terms.append(t)
+    return EvidenceSlot(
+        slot_id=f"refutation_loop::{h.hypothesis_id}::iter{iteration}",
+        sub_question=h.hypothesis_text,
+        evidence_type=_PROBE_LOOP_ETYPE[h.strategy],
+        target_layer=TargetLayer.both,
+        period_filter=None,
+        key_terms=extra_terms[:8],
+        coverage_threshold=0.50,
+    )
+
+
+def _run_refutation_stage(
+    *,
+    run_id: str,
+    query: str,
+    tier: ComplexityTier,
+    supported_ids: list[str],
+    ledger: Ledger,
+    verbose: bool,
+    max_loop_iterations: int = 2,
+) -> _RefutationStageResult:
+    """Stage 5: Refutation Agent + (if needed) refutation loop.
+
+    Resolves ``supported_ids`` to full ``FactRecord`` objects via the
+    fact_store JSONL index, calls ``run_refutation``, and — if the
+    agent flagged any hypothesis as ``strongly_refuted`` — runs a
+    Stage-3-style verifier loop on a synthetic slot for each.
+
+    Returns a ``_RefutationStageResult`` describing what happened. If
+    no verified facts survive the supported→FactRecord lookup (e.g.
+    every supported candidate was a chunk), the stage bypasses with
+    ``bypassed=True`` and the report is ``None``."""
+    result = _RefutationStageResult()
+    fact_map = lookup_facts(supported_ids)
+    verified_facts = list(fact_map.values())
+    if not verified_facts:
+        result.bypassed = True
+        result.bypass_reason = "no fact-resolved supported candidates"
+        if verbose:
+            print("  [refutation] BYPASS: no verified FactRecords to refute")
+        return result
+
+    if verbose:
+        print(
+            f"  [refutation] {len(verified_facts)} verified facts; "
+            f"max_loop_iterations={max_loop_iterations}"
+        )
+
+    try:
+        agent_result: RefutationAgentResult = run_refutation(
+            run_id=run_id,
+            query=query,
+            complexity_tier=tier,
+            verified_facts=verified_facts,
+            ledger=ledger,
+            iteration=1,
+            max_loop_iterations=max_loop_iterations,
+        )
+    except LLMError as exc:
+        # Both Mistral and Llama 3.3 70B were unreachable. Log and
+        # bypass — the orchestrator will record refutation_unavailable
+        # on the trace.
+        if verbose:
+            print(f"  [refutation] LLM ERROR (no fallback succeeded): {exc}")
+        result.bypassed = True
+        result.bypass_reason = f"llm_error: {exc}"
+        result.error = str(exc)
+        return result
+
+    result.report = agent_result.report
+    result.retrievals = list(agent_result.retrieval_records)
+    result.fallback_invoked = agent_result.fallback_invoked
+    result.models_used = list(agent_result.models_used)
+
+    if verbose:
+        rep = agent_result.report
+        print(
+            f"  [refutation] overall_verdict={rep.overall_verdict.value} "
+            f"hypotheses={len(rep.hypotheses)} "
+            f"strongly_refuted={len(agent_result.strongly_refuted)}"
+        )
+
+    if agent_result.report.overall_verdict == RefutationOverallVerdict.answer_strengthened:
+        # PASS or DISCLOSE — nothing more to do.
+        return result
+
+    # refutation_to_loop OR refutation_to_partial. In both, the agent
+    # has flagged at least one strongly_refuted hypothesis. We attempt
+    # a single loop pass per hypothesis (one slot, one verifier loop).
+    # If the verifier covers the refuting position, the conflict is
+    # resolved (Normal with structured temporal-evolution). If the
+    # verifier exhausts, that hypothesis remains unresolved and the
+    # orchestrator drops to Partial.
+    all_resolved = True
+    for h in agent_result.strongly_refuted:
+        refuting = agent_result.refuting_facts.get(h.hypothesis_id, [])
+        loop_iter = ledger.refutation_loop_count() + 1
+        loop_slot = _build_loop_slot(h, refuting, loop_iter)
+        if verbose:
+            print(
+                f"  [refutation_loop {loop_iter}] hypothesis={h.hypothesis_id} "
+                f"strategy={h.strategy.value} -> slot {loop_slot.slot_id}"
+            )
+        try:
+            loop_run = _run_slot(
+                loop_slot, tier, ledger,
+                verbose=verbose,
+                pass_origin=PassOrigin.refutation_loop,
+            )
+        except LLMError as exc:
+            if verbose:
+                print(f"      LLM ERROR in refutation loop: {exc}")
+            loop_run = _SlotRun(
+                final_verdict=VerifierVerdict.exhausted,
+                final_coverage=0.0,
+            )
+
+        result.retrievals.extend(loop_run.retrievals)
+        result.loop_verdicts.extend(loop_run.verdicts)
+
+        # Pull the supported FactRecords from the loop slot's verdict.
+        new_facts: list[FactRecord] = []
+        if loop_run.final_verdict == VerifierVerdict.covered:
+            last_v = loop_run.verdicts[-1] if loop_run.verdicts else None
+            if last_v is not None:
+                resolved_map = lookup_facts(last_v.supported_candidates)
+                # De-dupe against the original verified set.
+                existing_ids = {f.fact_id for f in verified_facts}
+                for fid, rec in resolved_map.items():
+                    if fid not in existing_ids:
+                        new_facts.append(rec)
+                        existing_ids.add(fid)
+
+        loop_record = RefutationLoopRecord(
+            iteration=loop_iter,
+            triggering_hypothesis_id=h.hypothesis_id,
+            targets_claim_id=h.targets_claim_id,
+            coverage_after=loop_run.final_coverage,
+        )
+        ledger.add_refutation_loop(loop_record)
+        result.loop_records.append(loop_record)
+
+        if new_facts:
+            result.additional_facts.extend(new_facts)
+            if verbose:
+                print(
+                    f"      -> RESOLVED: {len(new_facts)} new verified fact(s) "
+                    "added (structured temporal-evolution path)"
+                )
+        else:
+            all_resolved = False
+            if verbose:
+                print(
+                    "      -> UNRESOLVED: refutation loop did not cover the "
+                    "counter-position; downgrade to Partial"
+                )
+
+    result.all_resolved = all_resolved
+    return result
 
 
 def run_pipeline(
@@ -258,7 +483,9 @@ def run_pipeline(
         )
         total_iterations += len(slot_run.verdicts)
 
-    # 4. Degradation
+    # 4. Provisional degradation (before refutation). The bypass rule
+    # for the Refutation Agent is: skip whenever the run is heading to
+    # anything other than Normal — there's no clean answer to refute.
     final_verdicts_for_decision = [
         v for v in all_verdicts
         # take the last verdict per slot for the degradation decision
@@ -279,6 +506,55 @@ def run_pipeline(
         final_decision_outputs.append(last_v)
     degradation_level, degradation_cause = decide_degradation(final_decision_outputs)
 
+    # 4b. Stage 5: Refutation Agent (run only on Normal-bound runs).
+    refutation_report: RefutationReport | None = None
+    refutation_loop_iterations: list[RefutationLoopRecord] = []
+    adversarially_probed = False
+    refutation_bypass_reason: str | None = None
+
+    if degradation_level == DegradationLevel.NORMAL:
+        supported_ids: list[str] = []
+        seen: set[str] = set()
+        for v in final_decision_outputs:
+            for cid in v.supported_candidates:
+                if cid not in seen:
+                    supported_ids.append(cid)
+                    seen.add(cid)
+
+        ref_result = _run_refutation_stage(
+            run_id=rid,
+            query=val.normalized_query,
+            tier=val.complexity_tier,
+            supported_ids=supported_ids,
+            ledger=ledger,
+            verbose=verbose,
+        )
+
+        if ref_result.bypassed:
+            refutation_bypass_reason = ref_result.bypass_reason
+            adversarially_probed = False
+        else:
+            refutation_report = ref_result.report
+            refutation_loop_iterations.extend(ref_result.loop_records)
+            all_retrievals.extend(ref_result.retrievals)
+            all_verdicts.extend(ref_result.loop_verdicts)
+            total_iterations += len(ref_result.loop_verdicts)
+            for m in ref_result.models_used:
+                models_used.add(m)
+            adversarially_probed = True
+            if not ref_result.all_resolved:
+                degradation_level = DegradationLevel.PARTIAL
+                degradation_cause = DegradationCause.refutation_unresolved
+    else:
+        # Bypass path: refutation does not run under Partial /
+        # Clarification Request / Hard Halt — the spec's "no clean
+        # answer to refute" rule.
+        refutation_bypass_reason = (
+            f"degradation={degradation_level.name} — refutation bypassed"
+        )
+        if verbose:
+            print(f"  [refutation] BYPASS: {refutation_bypass_reason}")
+
     # 5. Build ExecutionTrace
     coverage_progression = [
         CoverageProgressionEntry(
@@ -296,6 +572,21 @@ def run_pipeline(
         from agents.verifier import VERIFIER_MODEL
         models_used.add(VERIFIER_MODEL)
 
+    extra: dict[str, Any] = {
+        "ledger": ledger.to_record().model_dump(),
+        "warnings": list(val.warnings),
+        "adversarially_probed": adversarially_probed,
+    }
+    if refutation_bypass_reason is not None:
+        extra["refutation_bypass_reason"] = refutation_bypass_reason
+    if refutation_report is not None and any(
+        # The fallback flag the Refutation Agent sets is on the report
+        # via model_used (Llama 3.3 70B != Mistral) — surface it as an
+        # explicit boolean for downstream Layer-5 monitoring.
+        m == REFUTATION_FALLBACK_MODEL for m in models_used
+    ) and REFUTATION_MODEL not in models_used:
+        extra["refutation_unavailable_fallback_invoked"] = True
+
     return ExecutionTrace(
         run_id=rid,
         query=QueryTraceInfo(
@@ -305,15 +596,14 @@ def run_pipeline(
         decomposition_plan=plan_obj,
         retrieval_passes=all_retrievals,
         verifier_verdicts=all_verdicts,
+        refutation_report=refutation_report,
         coverage_progression=coverage_progression,
+        refutation_loop_iterations=refutation_loop_iterations,
         final_slot_states=final_states,
         degradation_level=degradation_level,
         degradation_cause=degradation_cause,
         total_iterations=total_iterations,
         elapsed_seconds=round(time.time() - t0, 3),
         models_used=sorted(models_used),
-        extra={
-            "ledger": ledger.to_record().model_dump(),
-            "warnings": list(val.warnings),
-        },
+        extra=extra,
     )
