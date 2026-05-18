@@ -302,6 +302,22 @@ You are the Verifier Agent in BRAG. Your role is to evaluate whether a
 retrieved candidate set actually satisfies a slot's sub_question. You
 do NOT generate the answer — you render a verdict and a coverage score.
 
+# Identifying candidates
+
+Each candidate is labelled in the user message like:
+
+  [C1] id=F-XBRL-nflx-10q-2024-q1-us-gaap-Revenues-2024Q1
+       source=fact rrf_score=0.01234
+       ...
+
+The ``[C1]``, ``[C2]``, ``[C3]`` labels are positional markers for
+your convenience while reading the prompt — they are NOT the
+candidate's id. When you populate ``supported_candidates``,
+``rejected_candidates``, or ``conflicting_ids``, you MUST use the
+full ``id=`` value (e.g. ``F-XBRL-nflx-10q-2024-q1-us-gaap-Revenues-2024Q1``),
+NEVER the ``C1``/``C2`` label. Returning ``["C1", "C2"]`` is a
+critical error that breaks downstream pipeline stages.
+
 # Output
 
 Return a single JSON object (no markdown, no prose) with these fields:
@@ -311,11 +327,25 @@ Return a single JSON object (no markdown, no prose) with these fields:
   "verdict": "covered" | "gap" | "contradiction" | "exhausted",
   "gap_description": string | null,
   "contradiction_details": [
-    {"description": "...", "conflicting_ids": ["id1", "id2"]}
+    {
+      "description": "...",
+      "conflicting_ids": [
+        "F-XBRL-nflx-10k-2023-us-gaap-Revenues-FY2023",
+        "F-PROSE-nflx-q4-2023-letter-0042"
+      ]
+    }
   ],
-  "supported_candidates": ["id1", "id2"],
-  "rejected_candidates": ["id3"]
+  "supported_candidates": [
+    "F-XBRL-nflx-10q-2024-q1-us-gaap-Revenues-2024Q1",
+    "F-PROSE-nflx-q1-2024-letter-0017"
+  ],
+  "rejected_candidates": [
+    "nflx-q1-2024-transcript__qa__chunk_8"
+  ]
 }
+
+(Those id values are examples of the SHAPE — the exact ids on each
+run come from the candidate list in the user message.)
 
 Use "exhausted" only if instructed by the caller — under normal
 operation pick from covered / gap / contradiction.
@@ -431,25 +461,65 @@ def _build_user_message(
     return "\n".join(lines)
 
 
+_C_LABEL_RE = re.compile(r"^\s*\[?C(\d+)\]?\s*$", re.IGNORECASE)
+
+
+def _translate_c_labels(
+    ids: list[Any],
+    surviving: list[_EnrichedCandidate],
+) -> list[str]:
+    """Defensive translator: map any ``[Cn]``/``Cn`` index labels the
+    LLM returned (despite the prompt's explicit instruction not to)
+    back to the candidate's actual ``candidate_id`` using the
+    prompt's enumeration order. Non-label strings pass through
+    unchanged. Out-of-range labels are dropped — a returned id we
+    can't resolve is worse than a missing one."""
+    out: list[str] = []
+    for raw in ids:
+        if not isinstance(raw, str):
+            continue
+        m = _C_LABEL_RE.match(raw)
+        if m:
+            idx = int(m.group(1)) - 1
+            if 0 <= idx < len(surviving):
+                out.append(surviving[idx].candidate_id)
+            # Else: drop the unresolvable label silently.
+            continue
+        out.append(raw)
+    return out
+
+
 def _coerce_verifier_output(
     payload: Any,
     slot: EvidenceSlot,
     deterministic_rejects: list[str],
+    surviving: list[_EnrichedCandidate],
 ) -> VerifierOutput:
     """Validate the LLM's JSON and merge with deterministic rejects so
-    a single union list is returned to the caller."""
+    a single union list is returned to the caller. Translates any
+    [Cn] index labels the model accidentally returned back to real
+    candidate ids using ``surviving`` as the lookup."""
     if not isinstance(payload, dict):
         raise ValueError(f"Verifier returned non-object JSON: {type(payload).__name__}")
 
-    contradictions = [
-        ContradictionDetail.model_validate(d)
-        for d in (payload.get("contradiction_details") or [])
-    ]
+    contradictions: list[ContradictionDetail] = []
+    for d in (payload.get("contradiction_details") or []):
+        if not isinstance(d, dict):
+            continue
+        translated_ids = _translate_c_labels(d.get("conflicting_ids") or [], surviving)
+        contradictions.append(
+            ContradictionDetail.model_validate({
+                "description": d.get("description", ""),
+                "conflicting_ids": translated_ids,
+            })
+        )
 
     rejected: list[str] = list(deterministic_rejects)
-    for cid in payload.get("rejected_candidates") or []:
-        if isinstance(cid, str) and cid not in rejected:
+    for cid in _translate_c_labels(payload.get("rejected_candidates") or [], surviving):
+        if cid not in rejected:
             rejected.append(cid)
+
+    supported = _translate_c_labels(payload.get("supported_candidates") or [], surviving)
 
     return VerifierOutput.model_validate(
         {
@@ -458,7 +528,7 @@ def _coerce_verifier_output(
             "verdict": payload.get("verdict"),
             "gap_description": payload.get("gap_description") or None,
             "contradiction_details": [c.model_dump() for c in contradictions],
-            "supported_candidates": list(payload.get("supported_candidates") or []),
+            "supported_candidates": supported,
             "rejected_candidates": rejected,
         }
     )
@@ -516,7 +586,7 @@ def verify(
 
     parsed, _resp = _call(messages)
     try:
-        return _coerce_verifier_output(parsed, slot, pre.rejected)
+        return _coerce_verifier_output(parsed, slot, pre.rejected, pre.surviving)
     except (ValidationError, ValueError) as first_err:
         retry_msg = user_msg + (
             f"\n\nYour prior response failed validation: {first_err}. "
@@ -528,7 +598,7 @@ def verify(
         ]
         parsed2, _resp2 = _call(retry_messages)
         try:
-            return _coerce_verifier_output(parsed2, slot, pre.rejected)
+            return _coerce_verifier_output(parsed2, slot, pre.rejected, pre.surviving)
         except (ValidationError, ValueError) as second_err:
             raise LLMError(
                 f"Verifier failed schema validation twice on slot "

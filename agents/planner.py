@@ -33,7 +33,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from agents.llm_client import LLMError, LLMResponse, OpenRouterClient
-from schemas.enums import ComplexityTier
+from schemas.enums import ComplexityTier, EvidenceType
 from schemas.records import DecompositionPlan
 
 
@@ -180,6 +180,21 @@ Accepted formats:
 
 DO NOT use ranges like "FY2020-FY2023". For multi-period queries, emit
 ONE slot per period, each with its own single-period filter.
+
+CRITICAL: an FY-level filter (FY2018, FY2023, etc.) matches ONLY the
+fiscal-year 10-K. It does NOT match the four quarterly shareholder
+letters or transcripts from that year. So:
+
+  - For specific_metric and cross_period_comparison: FY filters are
+    correct, since the 10-K is the authoritative source.
+  - For strategic_position, temporal_evolution, causal_explanation,
+    risk_disclosure, accounting_policy, contradiction_detection: the
+    content lives in quarterly letters/transcripts and narrative
+    sections of the 10-K. Use NULL or a specific quarter
+    ("2018Q3"); NEVER an FY filter — it will drop every relevant
+    shareholder letter. When the user query says "in 2018" but the
+    fact_type is narrative, emit ``period_filter: null`` and let
+    BM25 + key_terms locate the right quarter.
 
 # key_terms
 
@@ -381,6 +396,51 @@ def _query_id(query: str) -> str:
     return f"q_{digest}"
 
 
+# Evidence types whose content lives in narrative documents
+# (shareholder letters, transcripts, 10-K narrative items) that are
+# anchored to a specific quarter, not a fiscal year. For these slot
+# types, an FY-level period_filter (e.g. FY2018) drops every
+# quarterly-anchored letter/transcript and almost always retrieves
+# nothing useful. Block 12 calibration confirmed this kills the
+# "no plans for ads" showcase. We post-process the Planner's plan to
+# drop FY-level filters on these slot types; quarterly filters
+# (2018Q3) are kept because they correctly target one letter.
+_NARRATIVE_EVIDENCE_TYPES: frozenset[EvidenceType] = frozenset({
+    EvidenceType.strategic_position,
+    EvidenceType.temporal_evolution,
+    EvidenceType.causal_explanation,
+    EvidenceType.risk_disclosure,
+    EvidenceType.accounting_policy,
+    EvidenceType.contradiction_detection,
+})
+
+
+def _is_fy_filter(period_filter: str | None) -> bool:
+    """True for FYYYYY and FYYYYY-guidance filters; False for quarter
+    (YYYYQN) and instant (YYYY-MM-DD) filters and for None."""
+    return period_filter is not None and period_filter.startswith("FY")
+
+
+def _normalize_plan_period_filters(plan: DecompositionPlan) -> DecompositionPlan:
+    """Drop FY-level period_filters on narrative slot types. The
+    Planner's prompt already discourages these but Llama 3.3 70B
+    sometimes emits them anyway on 'in YYYY' queries — and they
+    deterministically filter out quarterly-anchored shareholder
+    letters and transcripts where the actual narrative content lives."""
+    if not any(
+        _is_fy_filter(s.period_filter) and s.evidence_type in _NARRATIVE_EVIDENCE_TYPES
+        for s in plan.slots
+    ):
+        return plan
+    new_slots = [
+        s.model_copy(update={"period_filter": None})
+        if _is_fy_filter(s.period_filter) and s.evidence_type in _NARRATIVE_EVIDENCE_TYPES
+        else s
+        for s in plan.slots
+    ]
+    return plan.model_copy(update={"slots": new_slots})
+
+
 def _validate_plan(
     payload: Any,
     *,
@@ -411,7 +471,7 @@ def _validate_plan(
         )
     if not plan.slots:
         raise ValueError("Plan has zero slots.")
-    return plan
+    return _normalize_plan_period_filters(plan)
 
 
 def plan(
