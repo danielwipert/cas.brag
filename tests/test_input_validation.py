@@ -146,6 +146,14 @@ def test_query_with_its_possessive_passes() -> None:
     assert r.complexity_tier == ComplexityTier.standard
 
 
+def test_noun_phrase_query_passes() -> None:
+    # Short noun-phrase queries have few stopwords but are clearly
+    # English (and clearly in-scope for BRAG).
+    r = validate("Netflix accounting policy for content amortization")
+    assert r.passed
+    assert r.complexity_tier == ComplexityTier.simple
+
+
 def test_legitimate_use_of_instructions_word_passes() -> None:
     # Don't false-positive on the literal word "instructions" in context.
     r = validate("What instructions does Netflix give its content partners?")

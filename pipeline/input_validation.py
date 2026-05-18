@@ -162,9 +162,12 @@ def _looks_english(text: str) -> bool:
     if ascii_letters / len(letters) < 0.80:
         return False
     # Use >=2-char words only, so contractions like "what's" don't inflate
-    # the word count via the orphan "s" fragment.
+    # the word count via the orphan "s" fragment. Short noun-phrase queries
+    # (e.g., "Netflix accounting policy for content amortization") may have
+    # only one stopword; we trust the ASCII-ratio signal on queries under
+    # 8 words and only require stopwords on longer ones.
     words = [w for w in re.findall(r"\b[a-z]+\b", text.lower()) if len(w) >= 2]
-    if len(words) < 6:
+    if len(words) < 8:
         return True
     distinct_stopwords = {w for w in words if w in _ENGLISH_STOPWORDS}
     return len(distinct_stopwords) >= 2
