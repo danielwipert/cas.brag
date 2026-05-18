@@ -1,4 +1,4 @@
-"""Block 9a: Retrieval Memory Ledger.
+"""Block 9a: Retrieval Memory Ledger (extended in Block 11 for refutation).
 
 The Ledger tracks per-slot state across the Verifier loop: which IDs
 have been retrieved (so the Retriever can exclude them on the next
@@ -7,13 +7,16 @@ emitted by the Verifier. It also detects "zero progress" — two
 consecutive iterations where coverage barely moves — to trigger early
 exhaustion before max_iter is reached.
 
+Block 11 added refutation state: every hypothesis the Refutation Agent
+generates is recorded via ``add_refutation_hypothesis`` (so subsequent
+loop iterations don't re-test identical hypotheses), and every
+refutation-driven loop re-entry is recorded via
+``add_refutation_loop`` along with the strongly-refuted hypothesis
+that triggered it.
+
 The class wraps the Pydantic ``MemoryLedger`` record from
 ``schemas/records.py``. ``to_record()`` produces an immutable
 snapshot for the ExecutionTrace.
-
-Refutation fields (refutation_hypotheses_tested,
-refutation_loop_history) are kept on the schema but stay empty in
-Block 9. They come alive in Block 11.
 """
 from __future__ import annotations
 
@@ -21,6 +24,8 @@ from schemas.records import (
     CoverageHistoryEntry,
     GapHistoryEntry,
     MemoryLedger,
+    RefutationHypothesis,
+    RefutationLoopRecord,
 )
 
 
@@ -43,6 +48,11 @@ class Ledger:
         self._coverage: list[CoverageHistoryEntry] = []
         self._gaps: list[GapHistoryEntry] = []
         self._exhausted_queries: list[str] = []
+        # Refutation activity (Block 11). Hypotheses are accumulated
+        # across Refutation Agent invocations on this run; the loop
+        # records track every refutation-driven loop re-entry.
+        self._refutation_hypotheses: list[RefutationHypothesis] = []
+        self._refutation_loops: list[RefutationLoopRecord] = []
 
     # ------------------------------------------------------------------
     # Mutation
@@ -107,6 +117,19 @@ class Ledger:
         if query not in self._exhausted_queries:
             self._exhausted_queries.append(query)
 
+    def add_refutation_hypothesis(self, h: RefutationHypothesis) -> None:
+        """Record a hypothesis the Refutation Agent generated. Used by
+        the agent to dedupe across loop iterations — a hypothesis whose
+        ``hypothesis_text`` matches one already tested should not be
+        re-issued (prevents the agent from going in circles)."""
+        existing_texts = {ex.hypothesis_text for ex in self._refutation_hypotheses}
+        if h.hypothesis_text not in existing_texts:
+            self._refutation_hypotheses.append(h)
+
+    def add_refutation_loop(self, record: RefutationLoopRecord) -> None:
+        """Record a refutation-driven loop re-entry."""
+        self._refutation_loops.append(record)
+
     # ------------------------------------------------------------------
     # Inspection
     # ------------------------------------------------------------------
@@ -121,6 +144,14 @@ class Ledger:
 
     def gap_history_for(self, slot_id: str) -> list[GapHistoryEntry]:
         return [e for e in self._gaps if e.slot_id == slot_id]
+
+    def refutation_hypothesis_texts(self) -> set[str]:
+        """Already-tested hypothesis texts — the Refutation Agent uses
+        this on loop iterations to avoid regenerating duplicates."""
+        return {h.hypothesis_text for h in self._refutation_hypotheses}
+
+    def refutation_loop_count(self) -> int:
+        return len(self._refutation_loops)
 
     def should_exhaust_early(self, slot_id: str) -> bool:
         """True iff the slot has hit ``ZERO_PROGRESS_LIMIT`` consecutive
@@ -157,6 +188,8 @@ class Ledger:
             exhausted_queries=list(self._exhausted_queries),
             coverage_history=list(self._coverage),
             gap_history=list(self._gaps),
+            refutation_hypotheses_tested=list(self._refutation_hypotheses),
+            refutation_loop_history=list(self._refutation_loops),
             supported_candidates={
                 k: list(v) for k, v in self._supported.items()
             },
