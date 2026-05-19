@@ -118,12 +118,26 @@ def retrieve(
     n = _N_BY_TIER[complexity_tier]
     excluded = frozenset(excluded_ids)
 
-    # Channel 1: semantic vector.
-    vec_hits = vector_search(slot.sub_question, slot.target_layer, k)
-    # Channel 2: lexical BM25.
-    bm25_hits = bm25_search(list(slot.key_terms), slot.target_layer, k)
+    # Channel 1: semantic vector. Period filter is applied INSIDE the
+    # channel (Block 19) via a Chroma where-clause so the top-K is
+    # taken over the period-equivalent subset, not globally; otherwise
+    # off-period content dominates the top-K and the filter empties
+    # the candidate set.
+    vec_hits = vector_search(
+        slot.sub_question, slot.target_layer, k,
+        period_filter=slot.period_filter,
+    )
+    # Channel 2: lexical BM25. Same period-aware top-K.
+    bm25_hits = bm25_search(
+        list(slot.key_terms), slot.target_layer, k,
+        period_filter=slot.period_filter,
+    )
 
-    # Period filter both channels' outputs (post-retrieval per §3.4).
+    # Defensive: the channels already constrain to the period-equivalent
+    # subset, so this is a no-op for the constrained path. Keep it as a
+    # safety net for any future caller that bypasses the channel-level
+    # filter, and for cases where the channel returned candidates with
+    # period=None whose doc-fallback needs evaluation.
     vec_hits = filter_by_period(vec_hits, slot.period_filter)
     bm25_hits = filter_by_period(bm25_hits, slot.period_filter)
 

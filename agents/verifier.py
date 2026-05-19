@@ -35,7 +35,10 @@ import chromadb
 from pydantic import ValidationError
 
 from agents.llm_client import LLMError, OpenRouterClient
-from agents.retriever.period_filter import period_from_document_id
+from agents.retriever.period_filter import (
+    period_from_document_id,
+    periods_equivalent,
+)
 from agents.retriever.vector_channel import (
     FACT_CHROMA_PATH,
     FACT_COLLECTION,
@@ -53,9 +56,14 @@ from schemas.records import (
 
 
 VERIFIER_MODEL = "qwen/qwen-2.5-72b-instruct"
-# Defense in depth — same as the Planner; Venice's free-tier behavior
-# isn't worth the cost in null content and 429s.
-_PROVIDER_PREFS: dict[str, Any] = {"provider": {"ignore": ["Venice"]}}
+# Defense in depth — Venice has the null-content / 429 problem that bit
+# the Planner. Novita advertises qwen/qwen-2.5-72b-instruct but returns
+# HTTP 400 "does not support endpoint: completions" on every
+# /chat/completions call, so we exclude it too. Without this exclusion
+# OpenRouter pins the Verifier to Novita after the first call and
+# every subsequent verification fails silently, dropping retrieval
+# records via the orchestrator's LLMError handler.
+_PROVIDER_PREFS: dict[str, Any] = {"provider": {"ignore": ["Venice", "Novita"]}}
 
 
 # Slot types where numerical exactness applies (per spec §3.5 row).
@@ -211,10 +219,17 @@ def _concept_matches_mentions(
 
 
 def _period_matches(cand: _EnrichedCandidate, period_filter: str) -> bool:
-    if cand.period == period_filter:
+    """Mirror the channel-side equivalence (Block 19): FY{Y} <-> {Y}-12-31
+    and {Y}Q{N} <-> quarter-end instant. Without equivalence here, the
+    pre-filter rejects valid candidates the Retriever already accepted —
+    e.g. an XBRL instant fact at 2019-12-31 against a FY2019 slot."""
+    if periods_equivalent(cand.period, period_filter):
         return True
     if cand.period is None and cand.source_document:
-        return period_from_document_id(cand.source_document) == period_filter
+        return periods_equivalent(
+            period_from_document_id(cand.source_document),
+            period_filter,
+        )
     return False
 
 

@@ -22,7 +22,10 @@ from rank_bm25 import BM25Okapi
 
 from agents.retriever.period_filter import (
     ChannelCandidate,
+    equivalent_period_strings,
+    equivalent_source_documents,
     period_from_document_id,
+    periods_equivalent,
     source_document_from_chunk_id,
 )
 from schemas.enums import CandidateSource, TargetLayer
@@ -84,6 +87,62 @@ def _topk(idx: _BM25Index, query_tokens: list[str], k: int) -> list[tuple[str, f
     return [(cid, float(s)) for cid, s in pairs if s > 0]
 
 
+def _topk_filtered(
+    idx: _BM25Index,
+    query_tokens: list[str],
+    k: int,
+    keep: set[str],
+) -> list[tuple[str, float]]:
+    """Score every doc in the index but only retain those whose id is
+    in ``keep``, then take top-K from that subset. Used for the period-
+    filtered BM25 path."""
+    if not query_tokens or not keep:
+        return []
+    scores = idx.bm25.get_scores(query_tokens)
+    pairs = [
+        (cid, float(s))
+        for cid, s in zip(idx.ids, scores)
+        if s > 0 and cid in keep
+    ]
+    pairs.sort(key=lambda p: -p[1])
+    return pairs[:k]
+
+
+def _facts_in_period(period_filter: str) -> set[str]:
+    """Return fact IDs whose Chroma metadata makes them eligible under
+    ``period_filter``. Mirrors the vector channel's ``where`` clause:
+    fact-period is in the equivalent set OR source_document is in the
+    equivalent doc set."""
+    from agents.retriever.vector_channel import _get_client, FACT_CHROMA_PATH, FACT_COLLECTION
+
+    client = _get_client(FACT_CHROMA_PATH)
+    coll = client.get_collection(name=FACT_COLLECTION)
+    eq_periods = sorted(equivalent_period_strings(period_filter))
+    eq_docs = sorted(equivalent_source_documents(period_filter))
+    keep: set[str] = set()
+    if eq_periods:
+        res = coll.get(where={"period": {"$in": eq_periods}}, include=[])
+        keep.update(res["ids"])
+    if eq_docs:
+        res = coll.get(where={"source_document": {"$in": eq_docs}}, include=[])
+        keep.update(res["ids"])
+    return keep
+
+
+def _chunks_in_period(period_filter: str) -> set[str]:
+    """Return chunk IDs whose source_document's doc-derived period is
+    equivalent to ``period_filter``. Cheap: derives from the chunk id
+    via ``source_document_from_chunk_id`` so no Chroma round-trip."""
+    eq_docs = equivalent_source_documents(period_filter)
+    if not eq_docs:
+        return set()
+    idx = _load_chunk_bm25()
+    return {
+        cid for cid in idx.ids
+        if source_document_from_chunk_id(cid) in eq_docs
+    }
+
+
 def _fact_metadata_lookup(
     ids: list[str],
 ) -> tuple[dict[str, str], dict[str, str | None]]:
@@ -112,10 +171,18 @@ def bm25_search(
     key_terms: list[str],
     target_layer: TargetLayer,
     k: int,
+    period_filter: str | None = None,
 ) -> list[ChannelCandidate]:
     """Run BM25 over the slot's ``key_terms`` against the requested
     layer(s). Returns up to ``k`` per-layer hits, concatenated for
-    ``target_layer='both'``."""
+    ``target_layer='both'``.
+
+    When ``period_filter`` is set, the BM25 score is computed against
+    every doc as usual, but the top-K is taken only over the period-
+    equivalent subset (mirrors the vector channel's behavior). Without
+    this, narrow period queries lose all top-K hits to off-period
+    content even when the right doc exists in the index.
+    """
     query_text = " ".join(key_terms or [])
     tokens = _tokenize(query_text)
 
@@ -123,7 +190,11 @@ def bm25_search(
 
     if target_layer in (TargetLayer.fact_store, TargetLayer.both):
         idx = _load_fact_bm25()
-        pairs = _topk(idx, tokens, k)
+        if period_filter is None:
+            pairs = _topk(idx, tokens, k)
+        else:
+            keep = _facts_in_period(period_filter)
+            pairs = _topk_filtered(idx, tokens, k, keep)
         if pairs:
             fact_ids = [cid for cid, _ in pairs]
             src_map, period_map = _fact_metadata_lookup(fact_ids)
@@ -140,7 +211,11 @@ def bm25_search(
 
     if target_layer in (TargetLayer.chunk_store, TargetLayer.both):
         idx = _load_chunk_bm25()
-        pairs = _topk(idx, tokens, k)
+        if period_filter is None:
+            pairs = _topk(idx, tokens, k)
+        else:
+            keep = _chunks_in_period(period_filter)
+            pairs = _topk_filtered(idx, tokens, k, keep)
         for cid, score in pairs:
             doc_id = source_document_from_chunk_id(cid)
             out.append(
