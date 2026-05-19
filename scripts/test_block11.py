@@ -62,6 +62,7 @@ from pipeline.orchestrator import (
     _run_refutation_stage,
     run_pipeline,
 )
+from pipeline.trace_renderer import render_trace_from_json
 from schemas.enums import (
     ComplexityTier,
     DegradationCause,
@@ -250,6 +251,23 @@ def _run_acceptance_checks(state: dict) -> tuple[int, int]:
 
 
 def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--trace",
+        type=str,
+        default=None,
+        help=(
+            "Render an existing trace JSON via pipeline.trace_renderer "
+            "and exit, instead of re-running the showcase."
+        ),
+    )
+    args, _ = parser.parse_known_args()
+    if args.trace is not None:
+        print(render_trace_from_json(args.trace))
+        return
+
     # ---- Canonical run (informational) -------------------------------
     _print_section(f"CANONICAL (observational): {CANONICAL_QUERY}")
     t0 = time.time()

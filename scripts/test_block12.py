@@ -55,6 +55,7 @@ except AttributeError:
 
 from agents.refutation.agent import lookup_facts
 from pipeline.orchestrator import run_pipeline
+from pipeline.trace_renderer import render_trace
 from schemas.enums import (
     ComplexityTier,
     DegradationLevel,
@@ -521,7 +522,43 @@ def main() -> None:
     parser.add_argument("--log", type=str,
                         default="data/logs/block12_validation.json",
                         help="Output JSON log path.")
+    parser.add_argument(
+        "--trace",
+        type=str,
+        default=None,
+        help=(
+            "Render the embedded traces in an existing log JSON via "
+            "pipeline.trace_renderer and exit. Use --only Qx to limit "
+            "which query to render."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.trace is not None:
+        raw = json.loads(Path(args.trace).read_text(encoding="utf-8"))
+        queries = raw.get("queries") or []
+        only_ids = (
+            {qid.strip().upper() for qid in args.only.split(",") if qid.strip()}
+            if args.only else None
+        )
+        rendered_any = False
+        for q in queries:
+            qid = (q.get("qid") or "").upper()
+            if only_ids is not None and qid not in only_ids:
+                continue
+            trace_dict = q.get("trace")
+            if not trace_dict:
+                continue
+            trace = ExecutionTrace.model_validate(trace_dict)
+            print(f"\n{'#' * 78}")
+            print(f"# {qid}: {q.get('query', '(no query)')}")
+            print(f"{'#' * 78}\n")
+            print(render_trace(trace))
+            rendered_any = True
+        if not rendered_any:
+            print("No traces matched the --trace/--only filter.")
+            sys.exit(2)
+        return
 
     only_ids = (
         set(qid.strip().upper() for qid in args.only.split(",") if qid.strip())
