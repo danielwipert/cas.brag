@@ -1,0 +1,487 @@
+{#-
+Block 16 template — static, self-contained, no external assets.
+
+The Python side (pipeline/html_renderer.py) prepares the trace into a
+context object with pre-computed colors, paragraphs, and lookups so
+this template stays declarative. Filters used: `e` (html escape),
+`safe` (skip escape — only for fragments we built ourselves).
+
+Color semantics:
+  degradation  green=Normal, amber=Partial, blue=CR, red=Hard Halt
+  verdict      green=unrefuted, amber=weakly, red=strongly
+  strategy     blue=numerical family, amber=narrative family
+  coverage bar green ≥0.80, amber 0.50-0.79, red <0.50
+-#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRAG Trace — {{ run_id|e }}</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #161a22;
+      --panel-2: #1e2330;
+      --border: #2a3142;
+      --text: #d7dce5;
+      --text-dim: #8a93a6;
+      --accent: #79b8ff;
+      --green: #2ea043;
+      --amber: #d29922;
+      --red: #cf222e;
+      --blue: #218bff;
+      --strategy-num: #218bff;
+      --strategy-narr: #d29922;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1120px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 4px 0; }
+    h2 { font-size: 16px; margin: 0 0 12px 0; color: var(--accent); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin-bottom: 18px;
+    }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .meta {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 4px 14px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .meta dt { color: var(--text-dim); }
+    .meta dd { margin: 0; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border: 1px solid transparent;
+      color: #fff;
+    }
+    .badge.green { background: var(--green); }
+    .badge.amber { background: var(--amber); color: #1a1300; }
+    .badge.red   { background: var(--red); }
+    .badge.blue  { background: var(--blue); }
+    .badge.outline {
+      background: transparent;
+      border-color: var(--text-dim);
+      color: var(--text-dim);
+    }
+    .badge.strategy-num { background: var(--strategy-num); }
+    .badge.strategy-narr { background: var(--strategy-narr); color: #1a1300; }
+    code, .mono {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 12.5px;
+      color: #c0d3f2;
+      background: var(--panel-2);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .answer { white-space: pre-wrap; line-height: 1.55; }
+    .answer p { margin: 0 0 12px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      padding: 9px 8px;
+    }
+    th { color: var(--text-dim); font-weight: 600; }
+    tr.detail td {
+      background: var(--panel-2);
+      color: var(--text-dim);
+      font-size: 12.5px;
+      padding: 8px 16px 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    details > summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13px;
+      list-style: none;
+      padding: 4px 0;
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::before { content: "▸ "; }
+    details[open] > summary::before { content: "▾ "; }
+    .claim {
+      margin: 10px 0;
+      padding: 10px 12px;
+      background: var(--panel-2);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+    }
+    .claim .type {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-right: 8px;
+    }
+    .claim .cite {
+      display: inline-block;
+      margin-left: 4px;
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      color: var(--accent);
+      background: rgba(33, 139, 255, 0.12);
+      padding: 1px 6px;
+      border-radius: 999px;
+      text-decoration: none;
+    }
+    .sparkline {
+      display: inline-flex;
+      gap: 2px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .sparkline .bar {
+      display: inline-block;
+      width: 9px;
+      border-radius: 1px;
+    }
+    .footer {
+      color: var(--text-dim);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 18px;
+    }
+    .gap-text {
+      color: var(--text-dim);
+      font-size: 12.5px;
+      font-style: italic;
+    }
+    .pill {
+      display: inline-block;
+      padding: 1px 7px;
+      font-size: 11.5px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-right: 4px;
+      color: var(--text-dim);
+    }
+    .pill.green { color: var(--green); border-color: var(--green); }
+    .pill.amber { color: var(--amber); border-color: var(--amber); }
+    .pill.red   { color: var(--red);   border-color: var(--red); }
+    .violation {
+      margin: 6px 0;
+      padding: 8px 12px;
+      background: var(--panel-2);
+      border-left: 3px solid var(--red);
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .violation .sev {
+      font-weight: 600;
+      color: var(--red);
+      margin-right: 6px;
+    }
+    .empty { color: var(--text-dim); font-style: italic; }
+    .ids { font-family: ui-monospace, monospace; font-size: 11.5px; color: #c0d3f2; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    {# ---------- Header card ---------- #}
+    <section class="panel">
+      <h1>BRAG Execution Trace</h1>
+      <div class="row" style="margin-top: 6px;">
+        <span class="badge {{ degradation_color }}">{{ degradation_label|e }}</span>
+        {% if adversarially_probed %}
+        <span class="badge outline">Adversarially Probed</span>
+        {% endif %}
+        {% if refutation_fallback_invoked %}
+        <span class="badge outline">Refutation Fallback</span>
+        {% endif %}
+        <span class="pill">{{ complexity_tier|e }}</span>
+      </div>
+      <p style="margin: 14px 0 0 0; font-size: 15px;">
+        <strong>{{ query|e }}</strong>
+      </p>
+      <dl class="meta">
+        <dt>Run ID</dt><dd>{{ run_id|e }}</dd>
+        <dt>Degradation cause</dt><dd>{{ degradation_cause|e }}</dd>
+        {% if rejection_reason %}
+        <dt>Rejection reason</dt><dd>{{ rejection_reason|e }}</dd>
+        {% endif %}
+        <dt>Elapsed</dt><dd>{{ elapsed_seconds }}s</dd>
+        <dt>Total iterations</dt><dd>{{ total_iterations }}</dd>
+        <dt>Models used</dt><dd>{{ models_used|join(", ")|e }}</dd>
+      </dl>
+    </section>
+
+    {# ---------- Answer panel ---------- #}
+    <section class="panel">
+      <h2>Answer</h2>
+      {% if answer %}
+        <div class="answer">{{ answer_html|safe }}</div>
+
+        {% if answer.claims %}
+        <h2 style="margin-top: 22px;">Claims &amp; Citations</h2>
+        {% for c in answer.claims %}
+        <div class="claim">
+          <span class="type">{{ c.claim_type.value|e }}</span>
+          {{ c.claim_text|e }}
+          <div style="margin-top: 6px;">
+            {% for sid in c.source_ids %}
+            <a class="cite" href="#fact-{{ sid|e }}">{{ sid|e }}</a>
+            {% else %}
+            <span class="empty">no citations</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if answer.disclosed_gaps %}
+        <h2 style="margin-top: 22px;">Disclosed Gaps</h2>
+        <ul>
+          {% for g in answer.disclosed_gaps %}
+          <li>
+            <code>{{ g.slot_id|e }}</code> — {{ g.gap_description|e }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if answer.disclosed_contradictions %}
+        <h2 style="margin-top: 22px;">Disclosed Contradictions</h2>
+        <ul>
+          {% for c in answer.disclosed_contradictions %}
+          <li>
+            {{ c.description|e }}
+            <div class="ids" style="margin-top: 2px;">
+              conflicting: {{ c.conflicting_ids|join(", ")|e }}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      {% else %}
+        <p class="empty">No answer was produced for this run.</p>
+      {% endif %}
+    </section>
+
+    {# ---------- Refutation panel ---------- #}
+    {% if refutation_report %}
+    <section class="panel">
+      <h2>Refutation Stage</h2>
+      <div class="row">
+        <span class="badge {{ refutation_overall_color }}">{{ refutation_report.overall_verdict.value|e }}</span>
+        <span class="pill">{{ refutation_report.hypotheses|length }} hypothes{{ "is" if refutation_report.hypotheses|length == 1 else "es" }}</span>
+        {% if refutation_report.triggered_loop_reentry %}
+        <span class="pill amber">loop re-entry (iter {{ refutation_report.loop_reentry_iteration }})</span>
+        {% endif %}
+        <span class="pill">model: <code>{{ refutation_report.model_used|e }}</code></span>
+      </div>
+
+      {% if refutation_report.hypotheses %}
+      <table style="margin-top: 14px;">
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Hypothesis</th>
+            <th>Verdict</th>
+            <th>Targeted (date)</th>
+            <th>Refuting evidence (dates)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in hypothesis_rows %}
+          <tr>
+            <td><span class="badge {{ h.strategy_color }}">{{ h.strategy|e }}</span></td>
+            <td>{{ h.hypothesis_text|e }}</td>
+            <td><span class="badge {{ h.verdict_color }}">{{ h.verdict|e }}</span></td>
+            <td>
+              <code>{{ h.targets_claim_id|e }}</code><br>
+              <span class="mono nowrap">{{ h.targeted_date|e }}</span>
+            </td>
+            <td>
+              {% if h.refuting %}
+                {% for ev in h.refuting %}
+                <div>
+                  <code>{{ ev.fact_id|e }}</code>
+                  <span class="mono nowrap" style="color: var(--text-dim);">{{ ev.date|e }}</span>
+                </div>
+                {% endfor %}
+              {% else %}
+              <span class="empty">(no refuting evidence)</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="detail">
+            <td colspan="5">
+              <details>
+                <summary>rationale &amp; refuting fact text</summary>
+                <p style="margin-top: 6px;"><strong>Rationale:</strong> {{ h.rationale|e }}</p>
+                {% if h.refuting %}
+                <p><strong>Refuting fact text:</strong></p>
+                <ul>
+                  {% for ev in h.refuting %}
+                  <li><code>{{ ev.fact_id|e }}</code>: {{ ev.claim|e if ev.claim else "(no fact text available)" }}</li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
+              </details>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# ---------- Memory Ledger panel ---------- #}
+    <section class="panel">
+      <h2>Memory Ledger</h2>
+
+      <h2 style="font-size: 14px; margin: 12px 0 6px 0; color: var(--text-dim);">Coverage progression</h2>
+      {% if slot_coverage %}
+        {% for sid, bars in slot_coverage.items() %}
+        <div style="margin-bottom: 6px;">
+          <code>{{ sid|e }}</code>
+          <span class="sparkline">
+            {% for b in bars %}
+            <span class="bar" style="height: {{ b.height }}px; background: {{ b.color }};" title="iter {{ b.iter }} — coverage {{ b.score }}"></span>
+            {% endfor %}
+          </span>
+          <span class="mono" style="margin-left: 8px; color: var(--text-dim);">
+            {{ bars|map(attribute='score')|join(' → ')|e }}
+          </span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty">no coverage history</p>
+      {% endif %}
+
+      {% if gap_history %}
+      <h2 style="font-size: 14px; margin: 18px 0 6px 0; color: var(--text-dim);">Gap descriptions on retry</h2>
+      <ul>
+        {% for g in gap_history %}
+        <li>
+          <code>{{ g.slot_id|e }}</code> iter {{ g.iteration }}:
+          <span class="gap-text">{{ g.gap_description|e }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if refutation_loop_iterations %}
+      <h2 style="font-size: 14px; margin: 18px 0 6px 0; color: var(--text-dim);">Refutation loop history</h2>
+      <ul>
+        {% for r in refutation_loop_iterations %}
+        <li>
+          iter {{ r.iteration }} — triggering <code>{{ r.triggering_hypothesis_id|e }}</code>
+          targeting <code>{{ r.targets_claim_id|e }}</code>,
+          coverage_after {{ "%.2f"|format(r.coverage_after) }}
+          {% if r.coverage_after >= 0.80 %}
+            <span class="badge green">resolved</span>
+          {% else %}
+            <span class="badge red">unresolved</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <details style="margin-top: 14px;">
+        <summary>Retrieved IDs per slot ({{ retrieved_id_total }} candidate id{{ "" if retrieved_id_total == 1 else "s" }})</summary>
+        {% for sid, ids in retrieved_ids_per_slot.items() %}
+        <div style="margin-top: 8px;">
+          <code>{{ sid|e }}</code> ({{ ids|length }})
+          <div class="ids" style="margin-top: 2px;">{{ ids|join(", ")|e }}</div>
+        </div>
+        {% endfor %}
+      </details>
+    </section>
+
+    {# ---------- Execution trace panel (collapsed) ---------- #}
+    <section class="panel">
+      <h2>Execution trace details</h2>
+      <details>
+        <summary>Per-slot retrieval + verifier passes</summary>
+        {% for slot in slot_passes %}
+        <div style="margin-top: 14px;">
+          <strong>{{ slot.slot_id|e }}</strong>
+          <span class="pill">{{ slot.evidence_type|e }}</span>
+          <span class="pill">{{ slot.target_layer|e }}</span>
+          {% if slot.period_filter %}<span class="pill">pf: {{ slot.period_filter|e }}</span>{% endif %}
+          <span class="pill {{ slot.terminal_color }}">terminal: {{ slot.terminal_verdict|e }}</span>
+          <ul style="margin-top: 6px;">
+            {% for it in slot.iterations %}
+            <li>
+              iter {{ it.iteration }}: retrieved={{ it.candidate_count }},
+              coverage={{ "%.2f"|format(it.coverage_score) }},
+              verdict=<span class="pill {{ it.verdict_color }}">{{ it.verdict|e }}</span>
+              {% if it.gap_description %}
+              <div class="gap-text">gap: {{ it.gap_description|e }}</div>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% else %}
+        <p class="empty">No verifier-loop activity recorded.</p>
+        {% endfor %}
+      </details>
+    </section>
+
+    {# ---------- Governance panel ---------- #}
+    <section class="panel">
+      <h2>Output Governance</h2>
+      {% if governance_violations %}
+        <div class="row">
+          <span class="badge red">FAIL</span>
+          <span class="pill">{{ governance_violations|length }} violation{{ "" if governance_violations|length == 1 else "s" }}</span>
+        </div>
+        {% for v in governance_violations %}
+        <div class="violation">
+          <span class="sev">{{ v.severity.value|e }}</span>
+          {{ v.message|e }}
+          {% if v.claim_index is not none or v.hypothesis_id or v.expected or v.actual %}
+          <div class="mono" style="margin-top: 4px; color: var(--text-dim);">
+            {% if v.claim_index is not none %}claim_index={{ v.claim_index }} {% endif %}
+            {% if v.hypothesis_id %}hypothesis={{ v.hypothesis_id|e }} {% endif %}
+            {% if v.expected %}expected={{ v.expected|e }} {% endif %}
+            {% if v.actual %}actual={{ v.actual|e }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="row">
+          <span class="badge green">PASS</span>
+          <span style="color: var(--text-dim); font-size: 13px;">no violations</span>
+        </div>
+      {% endif %}
+    </section>
+
+    <div class="footer">
+      Generated by BRAG Block 16 HTML renderer · self-contained, no external assets.
+    </div>
+  </div>
+</body>
+</html>
