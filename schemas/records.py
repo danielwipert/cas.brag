@@ -14,6 +14,7 @@ from schemas.enums import (
     DegradationLevel,
     EvidenceType,
     FactType,
+    GovernanceSeverity,
     PassOrigin,
     RefutationOverallVerdict,
     RefutationStrategy,
@@ -293,6 +294,37 @@ class AnswerSchema(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Output Governance (spec §3.9)
+# ---------------------------------------------------------------------------
+
+
+class GovernanceViolation(BaseModel):
+    """One issue raised by the Output Governance gate.
+
+    ``numerical_mismatch`` is a constitutional violation — the answer
+    cited a number not present in any of its source facts. The
+    orchestrator escalates this to Hard Halt.
+
+    ``undisclosed_refutation`` means the AnswerSchema's
+    disclosed_refutations[] is missing a hypothesis the report
+    flagged as non-unrefuted. Recoverable with one Generator retry.
+
+    ``badge_mismatch`` means ``adversarially_probed`` on the answer
+    does not match the orchestrator's flag. Recoverable by overwriting
+    the badge.
+    """
+
+    model_config = _FROZEN
+
+    severity: GovernanceSeverity
+    message: str
+    claim_index: int | None = None
+    hypothesis_id: str | None = None
+    expected: str | None = None
+    actual: str | None = None
+
+
+# ---------------------------------------------------------------------------
 # Execution Trace (spec §7.2)
 # ---------------------------------------------------------------------------
 
@@ -333,6 +365,8 @@ class ExecutionTrace(BaseModel):
     coverage_progression: list[CoverageProgressionEntry] = Field(default_factory=list)
     refutation_loop_iterations: list[RefutationLoopRecord] = Field(default_factory=list)
     final_slot_states: list[FinalSlotState] = Field(default_factory=list)
+    answer: AnswerSchema | None = None
+    governance_violations: list[GovernanceViolation] = Field(default_factory=list)
     degradation_level: DegradationLevel = DegradationLevel.NORMAL
     degradation_cause: DegradationCause = DegradationCause.none
     total_tokens_consumed: int = Field(default=0, ge=0)

@@ -30,6 +30,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
+from agents.generator.agent import GENERATOR_MODEL, run_generator
 from agents.llm_client import LLMError
 from agents.planner import plan as run_planner
 from agents.refutation.agent import (
@@ -42,6 +43,7 @@ from agents.refutation.agent import (
 from agents.retriever.retriever import retrieve
 from agents.verifier import verify
 from pipeline.degradation import decide_degradation
+from pipeline.governance import check_governance, format_violations_for_retry
 from pipeline.input_validation import validate
 from pipeline.memory_ledger import Ledger
 from schemas.enums import (
@@ -49,18 +51,25 @@ from schemas.enums import (
     DegradationCause,
     DegradationLevel,
     EvidenceType,
+    GovernanceSeverity,
     PassOrigin,
     RefutationOverallVerdict,
     RefutationStrategy,
+    RefutationVerdict,
     TargetLayer,
     VerifierVerdict,
 )
 from schemas.records import (
+    AnswerSchema,
     CoverageProgressionEntry,
+    DisclosedContradiction,
+    DisclosedGap,
+    DisclosedRefutation,
     EvidenceSlot,
     ExecutionTrace,
     FactRecord,
     FinalSlotState,
+    GovernanceViolation,
     QueryTraceInfo,
     RefutationHypothesis,
     RefutationLoopRecord,
@@ -379,6 +388,284 @@ def _run_refutation_stage(
     return result
 
 
+def _build_disclosed_gaps(
+    slots: list[EvidenceSlot],
+    final_outputs: list[VerifierOutput],
+) -> list[DisclosedGap]:
+    """For Partial outputs, surface every slot whose terminal verdict
+    is gap / exhausted with the last gap_description from the Verifier
+    so the answer text can call them out. Slots that came back covered
+    don't appear here."""
+    out: list[DisclosedGap] = []
+    for v in final_outputs:
+        if v.verdict in (VerifierVerdict.gap, VerifierVerdict.exhausted):
+            description = v.gap_description or (
+                f"slot {v.slot_id} did not reach the coverage threshold"
+            )
+            out.append(DisclosedGap(slot_id=v.slot_id, gap_description=description))
+    return out
+
+
+def _build_disclosed_contradictions(
+    final_outputs: list[VerifierOutput],
+) -> list[DisclosedContradiction]:
+    """Hoist the Verifier's contradiction_details onto the answer."""
+    out: list[DisclosedContradiction] = []
+    for v in final_outputs:
+        for cd in v.contradiction_details:
+            out.append(
+                DisclosedContradiction(
+                    description=cd.description,
+                    conflicting_ids=list(cd.conflicting_ids),
+                )
+            )
+    return out
+
+
+def _inject_missing_disclosures(
+    answer: AnswerSchema,
+    refutation_report: RefutationReport | None,
+) -> AnswerSchema:
+    """Last-ditch repair for the post-retry undisclosed_refutation path:
+    deterministically rebuild the disclosed_refutations list from the
+    report so the structured field is at least correct, even if the
+    answer_text remains under-disclosed (which is what drops us to
+    Partial)."""
+    if refutation_report is None:
+        return answer
+    rebuilt: list[DisclosedRefutation] = []
+    for h in refutation_report.hypotheses:
+        if h.refutation_verdict == RefutationVerdict.unrefuted:
+            continue
+        rebuilt.append(
+            DisclosedRefutation(
+                targets_claim_id=h.targets_claim_id,
+                refuting_evidence_ids=list(h.evidence_ids),
+                refutation_verdict=h.refutation_verdict,
+                strategy=h.strategy,
+            )
+        )
+    return answer.model_copy(update={"disclosed_refutations": rebuilt})
+
+
+def _run_generator_and_governance(
+    *,
+    original_query: str,
+    verified_facts: list[FactRecord],
+    refutation_report: RefutationReport | None,
+    degradation_level: DegradationLevel,
+    degradation_cause: DegradationCause,
+    adversarially_probed: bool,
+    disclosed_gaps: list[DisclosedGap],
+    disclosed_contradictions: list[DisclosedContradiction],
+    models_used: set[str],
+    verbose: bool,
+) -> tuple[
+    AnswerSchema,
+    list[GovernanceViolation],
+    DegradationLevel,
+    DegradationCause,
+]:
+    """Stages 7 + 8.
+
+    Bypass paths (CR / Hard Halt / empty verified set) produce a canned
+    AnswerSchema via ``run_generator``. The Normal/Partial path calls
+    the Generator and then the Governance gate, with one retry on
+    ``undisclosed_refutation`` and an immediate Hard Halt on
+    ``numerical_mismatch``.
+    """
+    violations: list[GovernanceViolation] = []
+
+    # CR / Hard Halt → canned answer, no Generator + no Governance.
+    if degradation_level in (
+        DegradationLevel.CLARIFICATION_REQUEST,
+        DegradationLevel.HARD_HALT,
+    ):
+        answer, _ = run_generator(
+            original_query=original_query,
+            verified_facts=verified_facts,
+            refutation_report=refutation_report,
+            degradation_level=degradation_level,
+            adversarially_probed=adversarially_probed,
+            disclosed_gaps=disclosed_gaps,
+            disclosed_contradictions=disclosed_contradictions,
+        )
+        if verbose:
+            print(f"  [generator] BYPASS: degradation={degradation_level.name}")
+        return answer, violations, degradation_level, degradation_cause
+
+    # Empty verified set on a Normal/Partial path: nothing to ground an
+    # answer with. Reroute to Clarification Request.
+    if not verified_facts:
+        if verbose:
+            print("  [generator] BYPASS: empty verified set -> Clarification Request")
+        new_level = DegradationLevel.CLARIFICATION_REQUEST
+        new_cause = DegradationCause.slot_exhaustion
+        answer, _ = run_generator(
+            original_query=original_query,
+            verified_facts=verified_facts,
+            refutation_report=refutation_report,
+            degradation_level=new_level,
+            adversarially_probed=adversarially_probed,
+            disclosed_gaps=disclosed_gaps,
+            disclosed_contradictions=disclosed_contradictions,
+        )
+        return answer, violations, new_level, new_cause
+
+    # Stage 7: Generator
+    try:
+        answer, gen_resp = run_generator(
+            original_query=original_query,
+            verified_facts=verified_facts,
+            refutation_report=refutation_report,
+            degradation_level=degradation_level,
+            adversarially_probed=adversarially_probed,
+            disclosed_gaps=disclosed_gaps,
+            disclosed_contradictions=disclosed_contradictions,
+        )
+        if gen_resp is not None:
+            models_used.add(gen_resp.model)
+        if verbose:
+            print(
+                f"  [generator] OK — {len(answer.claims)} claim(s), "
+                f"answer_len={len(answer.answer_text)} chars"
+            )
+    except LLMError as exc:
+        if verbose:
+            print(f"  [generator] LLM ERROR: {exc}")
+        new_level = DegradationLevel.HARD_HALT
+        new_cause = DegradationCause.generator_unavailable
+        stub_answer, _ = run_generator(
+            original_query=original_query,
+            verified_facts=verified_facts,
+            refutation_report=refutation_report,
+            degradation_level=new_level,
+            adversarially_probed=adversarially_probed,
+            disclosed_gaps=disclosed_gaps,
+            disclosed_contradictions=disclosed_contradictions,
+        )
+        return stub_answer, violations, new_level, new_cause
+
+    # Stage 8: Governance
+    initial = check_governance(
+        answer=answer,
+        verified_facts=verified_facts,
+        refutation_report=refutation_report,
+        expected_adversarially_probed=adversarially_probed,
+    )
+    violations.extend(initial)
+    if verbose and initial:
+        for v in initial:
+            print(f"  [governance] {v.severity.value}: {v.message}")
+
+    has_numerical = any(
+        v.severity == GovernanceSeverity.numerical_mismatch for v in initial
+    )
+    if has_numerical:
+        # Constitutional violation — never release a wrong number.
+        return (
+            answer,
+            violations,
+            DegradationLevel.HARD_HALT,
+            DegradationCause.constitutional_violation,
+        )
+
+    has_undisclosed = any(
+        v.severity == GovernanceSeverity.undisclosed_refutation for v in initial
+    )
+    has_badge = any(
+        v.severity == GovernanceSeverity.badge_mismatch for v in initial
+    )
+
+    if has_undisclosed:
+        feedback = format_violations_for_retry(
+            [
+                v for v in initial
+                if v.severity == GovernanceSeverity.undisclosed_refutation
+            ]
+        )
+        try:
+            answer2, gen_resp2 = run_generator(
+                original_query=original_query,
+                verified_facts=verified_facts,
+                refutation_report=refutation_report,
+                degradation_level=degradation_level,
+                adversarially_probed=adversarially_probed,
+                disclosed_gaps=disclosed_gaps,
+                disclosed_contradictions=disclosed_contradictions,
+                prior_governance_feedback=feedback,
+            )
+            if gen_resp2 is not None:
+                models_used.add(gen_resp2.model)
+            second = check_governance(
+                answer=answer2,
+                verified_facts=verified_facts,
+                refutation_report=refutation_report,
+                expected_adversarially_probed=adversarially_probed,
+            )
+            violations.extend(second)
+            if any(
+                v.severity == GovernanceSeverity.numerical_mismatch for v in second
+            ):
+                return (
+                    answer2,
+                    violations,
+                    DegradationLevel.HARD_HALT,
+                    DegradationCause.constitutional_violation,
+                )
+            if any(
+                v.severity == GovernanceSeverity.undisclosed_refutation
+                for v in second
+            ):
+                repaired = _inject_missing_disclosures(answer2, refutation_report)
+                # Fix any badge issue while we're patching.
+                if repaired.adversarially_probed != adversarially_probed:
+                    repaired = repaired.model_copy(
+                        update={"adversarially_probed": adversarially_probed}
+                    )
+                new_level = (
+                    DegradationLevel.PARTIAL
+                    if degradation_level == DegradationLevel.NORMAL
+                    else degradation_level
+                )
+                new_cause = (
+                    DegradationCause.governance_failure
+                    if degradation_level == DegradationLevel.NORMAL
+                    else degradation_cause
+                )
+                return repaired, violations, new_level, new_cause
+            answer = answer2
+            if any(
+                v.severity == GovernanceSeverity.badge_mismatch for v in second
+            ):
+                answer = answer.model_copy(
+                    update={"adversarially_probed": adversarially_probed}
+                )
+            return answer, violations, degradation_level, degradation_cause
+        except LLMError as exc:
+            if verbose:
+                print(f"  [generator-retry] LLM ERROR: {exc}")
+            repaired = _inject_missing_disclosures(answer, refutation_report)
+            new_level = (
+                DegradationLevel.PARTIAL
+                if degradation_level == DegradationLevel.NORMAL
+                else degradation_level
+            )
+            new_cause = (
+                DegradationCause.governance_failure
+                if degradation_level == DegradationLevel.NORMAL
+                else degradation_cause
+            )
+            return repaired, violations, new_level, new_cause
+
+    if has_badge:
+        answer = answer.model_copy(
+            update={"adversarially_probed": adversarially_probed}
+        )
+
+    return answer, violations, degradation_level, degradation_cause
+
+
 def run_pipeline(
     query: str,
     *,
@@ -511,21 +798,25 @@ def run_pipeline(
     refutation_loop_iterations: list[RefutationLoopRecord] = []
     adversarially_probed = False
     refutation_bypass_reason: str | None = None
+    ref_result: _RefutationStageResult | None = None
+
+    # Accumulate the union of supported ids across slots — used both as
+    # input to the Refutation Agent and (after refutation) as the
+    # verified-fact pool for the Generator.
+    all_supported_ids: list[str] = []
+    seen_supported: set[str] = set()
+    for v in final_decision_outputs:
+        for cid in v.supported_candidates:
+            if cid not in seen_supported:
+                all_supported_ids.append(cid)
+                seen_supported.add(cid)
 
     if degradation_level == DegradationLevel.NORMAL:
-        supported_ids: list[str] = []
-        seen: set[str] = set()
-        for v in final_decision_outputs:
-            for cid in v.supported_candidates:
-                if cid not in seen:
-                    supported_ids.append(cid)
-                    seen.add(cid)
-
         ref_result = _run_refutation_stage(
             run_id=rid,
             query=val.normalized_query,
             tier=val.complexity_tier,
-            supported_ids=supported_ids,
+            supported_ids=all_supported_ids,
             ledger=ledger,
             verbose=verbose,
         )
@@ -554,6 +845,38 @@ def run_pipeline(
         )
         if verbose:
             print(f"  [refutation] BYPASS: {refutation_bypass_reason}")
+
+    # 4c. Build the verified fact set the Generator (and Governance)
+    # will see. Combines supported_ids resolved to FactRecords with any
+    # additional facts the refutation loop pulled in (the structured
+    # temporal-evolution path).
+    verified_facts = list(lookup_facts(all_supported_ids).values())
+    if ref_result is not None and not ref_result.bypassed:
+        existing = {f.fact_id for f in verified_facts}
+        for f in ref_result.additional_facts:
+            if f.fact_id not in existing:
+                verified_facts.append(f)
+                existing.add(f.fact_id)
+
+    # Build the disclosure inputs from the slot state.
+    disclosed_gaps = _build_disclosed_gaps(plan_obj.slots, final_decision_outputs)
+    disclosed_contradictions = _build_disclosed_contradictions(final_decision_outputs)
+
+    # 4d. Stage 7 (Generator) + Stage 8 (Governance).
+    answer, governance_violations, degradation_level, degradation_cause = (
+        _run_generator_and_governance(
+            original_query=val.normalized_query,
+            verified_facts=verified_facts,
+            refutation_report=refutation_report,
+            degradation_level=degradation_level,
+            degradation_cause=degradation_cause,
+            adversarially_probed=adversarially_probed,
+            disclosed_gaps=disclosed_gaps,
+            disclosed_contradictions=disclosed_contradictions,
+            models_used=models_used,
+            verbose=verbose,
+        )
+    )
 
     # 5. Build ExecutionTrace
     coverage_progression = [
@@ -600,6 +923,8 @@ def run_pipeline(
         coverage_progression=coverage_progression,
         refutation_loop_iterations=refutation_loop_iterations,
         final_slot_states=final_states,
+        answer=answer,
+        governance_violations=governance_violations,
         degradation_level=degradation_level,
         degradation_cause=degradation_cause,
         total_iterations=total_iterations,

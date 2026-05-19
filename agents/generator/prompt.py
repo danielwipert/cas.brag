@@ -326,6 +326,7 @@ def _build_user_message(
     disclosed_gaps: list[DisclosedGap],
     disclosed_contradictions: list[DisclosedContradiction],
     prior_error: str | None = None,
+    prior_governance_feedback: str | None = None,
 ) -> str:
     lines = [
         f"ORIGINAL QUERY: {original_query}",
@@ -369,6 +370,9 @@ def _build_user_message(
             "NOTE: your previous response failed validation. Error: "
             f"{prior_error}. Fix the issue and emit valid JSON."
         )
+    if prior_governance_feedback is not None:
+        lines.append("")
+        lines.append(prior_governance_feedback)
     return "\n".join(lines)
 
 
@@ -486,6 +490,7 @@ def generate_answer(
     client: OpenRouterClient | None = None,
     model: str | None = None,
     max_tokens: int = 2000,
+    prior_governance_feedback: str | None = None,
 ) -> tuple[AnswerSchema, LLMResponse]:
     """Generate an ``AnswerSchema`` for ``original_query`` over
     ``verified_facts``.
@@ -540,6 +545,7 @@ def generate_answer(
                     disclosed_gaps=gaps,
                     disclosed_contradictions=contradictions,
                     prior_error=prior_error,
+                    prior_governance_feedback=prior_governance_feedback,
                 ),
             },
         ]

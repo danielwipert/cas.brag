@@ -99,6 +99,14 @@ class DegradationCause(str, Enum):
     constitutional_violation = "constitutional_violation"
     verifier_unavailable = "verifier_unavailable"
     refutation_unavailable = "refutation_unavailable"
+    generator_unavailable = "generator_unavailable"
+    governance_failure = "governance_failure"
+
+
+class GovernanceSeverity(str, Enum):
+    numerical_mismatch = "numerical_mismatch"
+    undisclosed_refutation = "undisclosed_refutation"
+    badge_mismatch = "badge_mismatch"
 
 
 class CandidateSource(str, Enum):
