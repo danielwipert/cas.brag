@@ -329,7 +329,31 @@ def validate(query: str) -> ValidationResult:
             normalized_query=normalized,
         )
 
-    # 5. Scope warnings (do not reject).
+    # 5. Scope checks. A competitor mention WITHOUT any Netflix mention
+    # is treated as out-of-scope (the corpus contains only Netflix
+    # filings — the query can't be answered from it). Block 12 query
+    # Q8 "What's Disney's streaming subscriber count?" fails this
+    # check; otherwise the Planner happily reformulates the query to
+    # ask about Netflix instead, which is the wrong subject.
+    # A competitor mention WITH a Netflix mention is still a warning
+    # (the query is comparing or contextualizing).
+    competitor_match = _COMPETITORS_RE.search(normalized)
+    has_netflix = bool(re.search(r"\bnetflix\b", normalized, re.IGNORECASE))
+    if competitor_match and not has_netflix:
+        return ValidationResult(
+            passed=False,
+            rejection_reason=(
+                f"Query is about {competitor_match.group(0)}, which is "
+                "outside BRAG's corpus. BRAG answers questions about "
+                "Netflix's public reporting only. Rephrase to ask about "
+                "Netflix, or include Netflix as the subject of the comparison."
+            ),
+            warnings=(),
+            complexity_tier=ComplexityTier.simple,
+            normalized_query=normalized,
+        )
+
+    # 5b. Soft scope warnings (do not reject).
     warnings = tuple(_scope_warnings(normalized))
 
     # 6. Complexity tier.

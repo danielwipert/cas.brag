@@ -37,8 +37,19 @@ def test_complex_passes_and_classifies_as_complex() -> None:
     assert r.complexity_tier == ComplexityTier.complex
 
 
-def test_out_of_scope_competitor_warns_but_passes() -> None:
+def test_competitor_without_netflix_rejects() -> None:
+    """A query about a competitor with no Netflix mention is out of
+    scope — Block 12 raised the bar from warn-pass to hard-reject so
+    the Planner doesn't reformulate the question to the wrong subject."""
     r = validate("What's Disney's streaming subscriber count?")
+    assert not r.passed
+    assert r.rejection_reason and "Disney" in r.rejection_reason
+
+
+def test_competitor_with_netflix_warns_but_passes() -> None:
+    """A query that mentions both Netflix and a competitor is in scope
+    (comparative or contextual) and emits a soft warning."""
+    r = validate("How does Netflix compare to Disney on subscriber count?")
     assert r.passed
     assert any("competitor" in w.lower() for w in r.warnings)
 

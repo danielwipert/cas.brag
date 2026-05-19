@@ -33,7 +33,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from agents.llm_client import LLMError, LLMResponse, OpenRouterClient
-from schemas.enums import ComplexityTier, EvidenceType
+from schemas.enums import ComplexityTier, EvidenceType, TargetLayer
 from schemas.records import DecompositionPlan
 
 
@@ -161,11 +161,17 @@ Pick exactly one per slot:
 # target_layer routing
 
 - specific_metric, cross_period_comparison → "fact_store"
-- causal_explanation, temporal_evolution, strategic_position,
-  contradiction_detection → "chunk_store"
-- forward_looking_statement, risk_disclosure, accounting_policy,
-  definition → "both" (the fact is the anchor; surrounding chunks
-  carry the context)
+  (XBRL is the authoritative source for atomic numerical values.)
+- All narrative slot types — strategic_position, contradiction_detection,
+  causal_explanation, temporal_evolution, forward_looking_statement,
+  risk_disclosure, accounting_policy, definition → "both"
+  (The prose extractor produces atomic facts for these types in the
+  fact_store; surrounding chunks carry the context the verifier
+  needs to judge claim support and the refutation agent needs to
+  surface refuting positions. Routing to "chunk_store" alone hides
+  the prose facts from the verifier, which makes refutation bypass
+  and slots exhaust on chunk-only coverage. Always use "both" for
+  narrative types.)
 
 # period_filter
 
@@ -295,7 +301,7 @@ _FEW_SHOTS: list[tuple[str, ComplexityTier, dict[str, Any]]] = [
                     "slot_id": "S1",
                     "sub_question": "What was Netflix's stated stance on advertising in 2016-2018?",
                     "evidence_type": "strategic_position",
-                    "target_layer": "chunk_store",
+                    "target_layer": "both",
                     "period_filter": None,
                     "key_terms": [
                         "Netflix advertising stance 2017",
@@ -308,7 +314,7 @@ _FEW_SHOTS: list[tuple[str, ComplexityTier, dict[str, Any]]] = [
                     "slot_id": "S2",
                     "sub_question": "When and how did Netflix announce its shift toward an ad-supported tier?",
                     "evidence_type": "temporal_evolution",
-                    "target_layer": "chunk_store",
+                    "target_layer": "both",
                     "period_filter": None,
                     "key_terms": [
                         "Netflix ad-supported tier announcement 2022",
@@ -334,7 +340,7 @@ _FEW_SHOTS: list[tuple[str, ComplexityTier, dict[str, Any]]] = [
                     "slot_id": "S4",
                     "sub_question": "What rationale did Netflix give for adopting the ad-supported tier?",
                     "evidence_type": "causal_explanation",
-                    "target_layer": "chunk_store",
+                    "target_layer": "both",
                     "period_filter": None,
                     "key_terms": [
                         "Netflix advertising tier rationale",
@@ -422,23 +428,37 @@ def _is_fy_filter(period_filter: str | None) -> bool:
 
 
 def _normalize_plan_period_filters(plan: DecompositionPlan) -> DecompositionPlan:
-    """Drop FY-level period_filters on narrative slot types. The
-    Planner's prompt already discourages these but Llama 3.3 70B
-    sometimes emits them anyway on 'in YYYY' queries — and they
-    deterministically filter out quarterly-anchored shareholder
-    letters and transcripts where the actual narrative content lives."""
-    if not any(
-        _is_fy_filter(s.period_filter) and s.evidence_type in _NARRATIVE_EVIDENCE_TYPES
-        for s in plan.slots
-    ):
-        return plan
-    new_slots = [
-        s.model_copy(update={"period_filter": None})
-        if _is_fy_filter(s.period_filter) and s.evidence_type in _NARRATIVE_EVIDENCE_TYPES
-        else s
-        for s in plan.slots
-    ]
-    return plan.model_copy(update={"slots": new_slots})
+    """Two post-LLM corrections for narrative slot types:
+
+    1. Drop FY-level period_filters — they filter out every quarterly-
+       anchored shareholder letter and transcript where the narrative
+       content actually lives, leaving the verifier with nothing.
+    2. Upgrade ``chunk_store``-only routing to ``both`` — the prose
+       extractor produces atomic facts for these types in the
+       fact_store, and the verifier+refutation stages need them.
+       Routing to chunks alone hides those facts and forces the
+       verifier to synthesize from raw chunk text, which produces
+       low coverage scores and bypasses refutation downstream.
+
+    Both fixes are defense in depth — the system prompt already
+    instructs Llama 3.3 70B correctly, but it occasionally lapses
+    on 'in YYYY' queries (FY pinning) and on strategic_position
+    routing (chunk_store)."""
+    new_slots = []
+    changed = False
+    for s in plan.slots:
+        updates: dict[str, Any] = {}
+        if s.evidence_type in _NARRATIVE_EVIDENCE_TYPES:
+            if _is_fy_filter(s.period_filter):
+                updates["period_filter"] = None
+            if s.target_layer == TargetLayer.chunk_store:
+                updates["target_layer"] = TargetLayer.both
+        if updates:
+            new_slots.append(s.model_copy(update=updates))
+            changed = True
+        else:
+            new_slots.append(s)
+    return plan.model_copy(update={"slots": new_slots}) if changed else plan
 
 
 def _validate_plan(
