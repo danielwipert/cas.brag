@@ -34,6 +34,7 @@ env/
 *.swp
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Claude Code per-user permission settings (team settings.json is fine to commit).
 .claude/settings.local.json
