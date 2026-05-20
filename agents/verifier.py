@@ -367,10 +367,35 @@ operation pick from covered / gap / contradiction.
 
 # Coverage rubric (calibration)
 
-  1.00  Evidence directly answers the sub_question with all needed detail.
-  0.80  Covered, with at most minor missing context.
-  0.50  Partial — addresses the topic but misses a key element.
-  0.20  Topically adjacent but doesn't answer the sub_question.
+  1.00  Evidence directly answers the sub_question with all the
+        detail asked for (specific numbers, exact periods, full
+        attributions).
+  0.80  Substantive answer present — the candidate set directly
+        addresses the asked subject and resolves the central
+        question, with at most minor missing context. For
+        ``specific_metric`` / ``cross_period_comparison`` slots
+        this requires a numerical value with unit and period. For
+        ``forward_looking_statement`` slots, directional guidance
+        ("we expect X up/down vs prior period", "guidance
+        increased from 22%-23% to 24%") and relative guidance with
+        a quantitative anchor count as substantive — Netflix's
+        actual guidance language is often directional rather than
+        a single forecast number. For ``causal_explanation``,
+        ``temporal_evolution``, ``risk_disclosure``, ``accounting_
+        policy``, ``strategic_position`` slots, narrative answers
+        that explain the why, describe the position, or trace the
+        evolution count as substantive even without numerical
+        precision.
+  0.50  Partial — addresses the topic but misses a key element
+        (wrong period, adjacent metric instead of the asked one,
+        narrative that hints at the answer without stating it).
+  0.20  Topically adjacent — the candidate mentions the broad
+        subject area but does NOT address the specific question
+        asked. Do not score here just because a forward-looking
+        or narrative answer lacks a specific number; if the
+        candidate engages with the asked subject and provides
+        directional or narrative information, it belongs at
+        0.50–0.80, not 0.20.
   0.00  No relevant evidence in the candidate set.
 
 # Verdict rules
