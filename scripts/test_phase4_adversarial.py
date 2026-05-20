@@ -94,23 +94,23 @@ class ExpectedCategory(str, Enum):
 # Per-tier wall-clock budgets for the acceptance check. Block 20
 # recalibrated simple/standard from spec defaults (30/80/150) after
 # Block 19 unblocked the Verifier path. Block 21 finished the complex
-# tier after running Q7 three times in isolation:
+# tier after running Q7 three times in isolation. Block 22 bumped
+# the simple tier after widening the refutation gate to fire on
+# Partial paths (Q15 hit 205s on the new path; the prior 180s budget
+# was sized for the Q2 Normal+refutation case at 148s).
 #
-#   simple correctness-pass: max 148.1s (Q2 strong-refutation),
-#       median 43.4s; old 30s budget failed 6 of 9 passing runs.
+#   simple correctness-pass: max 205s observed after Block 22's
+#       refutation-on-PARTIAL change (Q15: exhausted-slot loop +
+#       refutation); 220s gives ~7% headroom. Pre-Block-22 max was
+#       148s (Q2 strong-refutation on a NORMAL path).
 #   standard correctness-pass: max 109.7s (Q3); old 80s budget failed
 #       the one data point.
 #   complex (Q7 variance runs 1/2/3): 441s / 134s / 483s. Run 2's
 #       134s was an orchestrator bug (LLMError dropped slot_run);
 #       the honest elapsed when the pipeline runs to completion is
-#       441–483s. The "retry storm" framing in Block 21 turned out
-#       to be wrong — Q7 honestly needs the time because it's a
-#       4-slot complex query running near max_iter on most slots.
-#
-# Headroom: ~20% above observed simple max; ~35% above the single
-# standard data point; ~12% above observed complex P95.
+#       441–483s.
 _TIER_BUDGET_S: dict[ComplexityTier, float] = {
-    ComplexityTier.simple: 180.0,
+    ComplexityTier.simple: 220.0,
     ComplexityTier.standard: 150.0,
     ComplexityTier.complex: 540.0,
 }

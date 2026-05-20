@@ -831,7 +831,22 @@ def run_pipeline(
                 all_supported_ids.append(cid)
                 seen_supported.add(cid)
 
-    if degradation_level == DegradationLevel.NORMAL:
+    # Block 22 widened this gate from "Normal only" to "Normal OR
+    # Partial with supported facts." The original spec intent was
+    # "no clean answer to refute" — but Partial DOES have an answer
+    # (just incomplete), and refutation can usefully surface counter-
+    # positions for the slots that did cover. CR / Hard Halt still
+    # bypass because they produce no answer at all. The supported-
+    # facts guard prevents the agent from running on a Partial run
+    # whose every slot exhausted (no facts to seed hypotheses with).
+    should_run_refutation = (
+        degradation_level == DegradationLevel.NORMAL
+        or (
+            degradation_level == DegradationLevel.PARTIAL
+            and bool(all_supported_ids)
+        )
+    )
+    if should_run_refutation:
         ref_result = _run_refutation_stage(
             run_id=rid,
             query=val.normalized_query,
@@ -853,15 +868,23 @@ def run_pipeline(
             for m in ref_result.models_used:
                 models_used.add(m)
             adversarially_probed = True
-            if not ref_result.all_resolved:
+            # On a NORMAL-bound run, an unresolved strongly-refuted
+            # hypothesis degrades the answer to Partial. On a Partial-
+            # bound run, we're already Partial — keep the existing
+            # degradation_cause (the slot-exhaustion that put us in
+            # Partial is the more informative signal than the
+            # refutation outcome).
+            if not ref_result.all_resolved and degradation_level == DegradationLevel.NORMAL:
                 degradation_level = DegradationLevel.PARTIAL
                 degradation_cause = DegradationCause.refutation_unresolved
     else:
-        # Bypass path: refutation does not run under Partial /
-        # Clarification Request / Hard Halt — the spec's "no clean
-        # answer to refute" rule.
+        # Bypass path: refutation does not run under CR / Hard Halt
+        # (no answer to refute) or under Partial with zero supported
+        # facts (no factual ground to seed hypotheses).
         refutation_bypass_reason = (
-            f"degradation={degradation_level.name} — refutation bypassed"
+            f"degradation={degradation_level.name}"
+            f"{' (no supported facts)' if degradation_level == DegradationLevel.PARTIAL else ''}"
+            f" — refutation bypassed"
         )
         if verbose:
             print(f"  [refutation] BYPASS: {refutation_bypass_reason}")
