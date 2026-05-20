@@ -135,7 +135,27 @@ def _run_slot(
         )
         run.retrievals.append(retrieval)
 
-        verdict = verify(current_slot, retrieval)
+        # Block 21a: when the Verifier LLM errors transiently (provider
+        # routing flake, 429, null content), preserve the retrievals and
+        # any prior verdicts already recorded in this slot's run, mark
+        # the slot exhausted, and return. The previous code let the
+        # exception propagate to the outer handler in run_pipeline,
+        # which then created a fresh empty _SlotRun and dropped this
+        # slot's evidence from the trace entirely — observed ~1-in-3 on
+        # complex queries during Block 21 variance runs (Q7).
+        try:
+            verdict = verify(current_slot, retrieval)
+        except LLMError as exc:
+            if verbose:
+                print(
+                    f"      LLM ERROR on verify (iter {iteration}): {exc}\n"
+                    "      → EXHAUSTED with partial slot_run preserved"
+                )
+            run.final_verdict = VerifierVerdict.exhausted
+            run.final_coverage = (
+                last_verdict.coverage_score if last_verdict else 0.0
+            )
+            return run
         run.verdicts.append(verdict)
         last_verdict = verdict
         ledger.add_coverage(slot.slot_id, iteration, verdict.coverage_score)

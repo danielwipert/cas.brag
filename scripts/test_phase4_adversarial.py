@@ -92,26 +92,27 @@ class ExpectedCategory(str, Enum):
 
 
 # Per-tier wall-clock budgets for the acceptance check. Block 20
-# recalibrated these from the original spec defaults (30/80/150) after
-# Block 19 unblocked the Verifier path and the suite started actually
-# running real LLM workloads. Observed elapsed times across the 15
-# correctness-passing runs in data/logs/phase4_adversarial/:
+# recalibrated simple/standard from spec defaults (30/80/150) after
+# Block 19 unblocked the Verifier path. Block 21 finished the complex
+# tier after running Q7 three times in isolation:
 #
 #   simple correctness-pass: max 148.1s (Q2 strong-refutation),
 #       median 43.4s; old 30s budget failed 6 of 9 passing runs.
-#   standard correctness-pass: only Q3 (109.7s); old 80s budget failed
+#   standard correctness-pass: max 109.7s (Q3); old 80s budget failed
 #       the one data point.
-#   complex correctness-pass: none; Q7 hit 451s but is a known retry-
-#       storm outlier slated for Block 21 investigation.
+#   complex (Q7 variance runs 1/2/3): 441s / 134s / 483s. Run 2's
+#       134s was an orchestrator bug (LLMError dropped slot_run);
+#       the honest elapsed when the pipeline runs to completion is
+#       441–483s. The "retry storm" framing in Block 21 turned out
+#       to be wrong — Q7 honestly needs the time because it's a
+#       4-slot complex query running near max_iter on most slots.
 #
 # Headroom: ~20% above observed simple max; ~35% above the single
-# standard data point; 1.6x standard for complex as a placeholder.
-# Treat the complex budget as provisional until Block 21 unblocks a
-# correctness-passing run.
+# standard data point; ~12% above observed complex P95.
 _TIER_BUDGET_S: dict[ComplexityTier, float] = {
     ComplexityTier.simple: 180.0,
     ComplexityTier.standard: 150.0,
-    ComplexityTier.complex: 240.0,
+    ComplexityTier.complex: 540.0,
 }
 
 
