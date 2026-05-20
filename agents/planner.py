@@ -202,6 +202,43 @@ letters or transcripts from that year. So:
     fact_type is narrative, emit ``period_filter: null`` and let
     BM25 + key_terms locate the right quarter.
 
+CRITICAL: forward guidance lives in the SOURCE-DOC period, not the
+guided-about period. When the user asks about guidance that was given
+at a past meeting/call for a future period, the period_filter must
+point at the meeting (when the guidance was made), not at the period
+being guided about. Examples:
+
+  - "What guidance did Netflix give on Q1 2024 paid memberships at the
+    Q4 2023 earnings call?" → ``period_filter: "2023Q4"`` (Q4 2023
+    letter/transcript holds the guidance) — NOT 2024Q1.
+  - "What was Netflix's revenue outlook for FY2025 at the Q4 2024
+    call?" → ``period_filter: "2024Q4"`` — NOT FY2025.
+  - "What is Netflix's guidance for FY2026?" (no specific call named)
+    → ``period_filter: "FY2026-guidance"`` is acceptable because the
+    fact_store's forward_guidance facts are tagged this way; or
+    ``period_filter: null`` and let key_terms locate the most recent
+    guidance.
+
+The rule of thumb: ``forward_looking_statement`` slots whose user
+query names a specific past meeting/call/letter should filter on
+THAT meeting's period. Slots that just ask "what's Netflix's outlook
+for X" without naming a source can use FY{Y}-guidance or null.
+
+# coverage_threshold
+
+Default to ``0.80`` for almost every slot type — that's the rubric
+target for "evidence directly answers the sub_question with at most
+minor missing context."
+
+EXCEPTION: ``forward_looking_statement`` slots use ``0.50``. Netflix's
+forward guidance is often directional rather than numerical (e.g.,
+"we expect paid net additions to be down sequentially but up versus
+Q1'23 paid net adds of 1.8M"), and the Verifier's rubric rates such
+qualitative guidance as 0.20–0.50. A 0.80 threshold on this evidence
+type drops most of Netflix's actual guidance language as "topically
+adjacent." 0.50 lets directional guidance count as covered while
+still requiring the candidate to address the asked-about period.
+
 # key_terms
 
 Each key_term must be specific enough to anchor BM25 lexical retrieval.
@@ -287,6 +324,37 @@ _FEW_SHOTS: list[tuple[str, ComplexityTier, dict[str, Any]]] = [
                     ],
                     "coverage_threshold": 0.80,
                 },
+            ],
+        },
+    ),
+    (
+        # Block 23: forward-guidance source-doc period + lower threshold.
+        # period_filter points at the CALL where the guidance was given
+        # (2023Q4), not the period being guided about (2024Q1).
+        # coverage_threshold is 0.50 for forward_looking_statement
+        # because Netflix's guidance is often directional, not numerical.
+        "What guidance did Netflix give on Q1 2024 paid memberships "
+        "at the Q4 2023 earnings call?",
+        ComplexityTier.standard,
+        {
+            "synthesis_strategy": "integrate",
+            "slots": [
+                {
+                    "slot_id": "S1",
+                    "sub_question": (
+                        "What did Netflix say at the Q4 2023 earnings "
+                        "call about Q1 2024 paid memberships?"
+                    ),
+                    "evidence_type": "forward_looking_statement",
+                    "target_layer": "both",
+                    "period_filter": "2023Q4",
+                    "key_terms": [
+                        "Netflix Q4 2023 earnings call paid memberships",
+                        "Q1 2024 paid net additions outlook",
+                        "Q4 2023 shareholder letter Q1 2024 guidance",
+                    ],
+                    "coverage_threshold": 0.50,
+                }
             ],
         },
     ),

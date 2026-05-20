@@ -99,10 +99,13 @@ class ExpectedCategory(str, Enum):
 # Partial paths (Q15 hit 205s on the new path; the prior 180s budget
 # was sized for the Q2 Normal+refutation case at 148s).
 #
-#   simple correctness-pass: max 205s observed after Block 22's
-#       refutation-on-PARTIAL change (Q15: exhausted-slot loop +
-#       refutation); 220s gives ~7% headroom. Pre-Block-22 max was
-#       148s (Q2 strong-refutation on a NORMAL path).
+#   simple correctness-pass: max 228s observed after Block 23 widened
+#       the planner's reach on forward-guidance source-doc periods —
+#       Q15 now occasionally lands at NORMAL (was always PARTIAL),
+#       which means both slots cover AND refutation runs, where the
+#       prior PARTIAL path short-circuited S1. 250s gives ~10% over
+#       the new max. Pre-Block-22 max was 148s (Q2 strong-refutation
+#       on a NORMAL path); Block 22 raised it to 205s.
 #   standard correctness-pass: max 109.7s (Q3); old 80s budget failed
 #       the one data point.
 #   complex (Q7 variance runs 1/2/3): 441s / 134s / 483s. Run 2's
@@ -110,7 +113,7 @@ class ExpectedCategory(str, Enum):
 #       the honest elapsed when the pipeline runs to completion is
 #       441–483s.
 _TIER_BUDGET_S: dict[ComplexityTier, float] = {
-    ComplexityTier.simple: 220.0,
+    ComplexityTier.simple: 250.0,
     ComplexityTier.standard: 150.0,
     ComplexityTier.complex: 540.0,
 }
