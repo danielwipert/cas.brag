@@ -1,0 +1,94 @@
+# BRAG Execution Trace
+
+**Query:** Has Netflix's stance on advertising changed?
+**Run ID:** `run-ee7b318c`
+**Complexity tier:** simple
+**Final degradation level:** PARTIAL (cause: refutation_unresolved)
+**Badges:** [ADVERSARIALLY PROBED]
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `passed`
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `integrate`
+- Slots (2):
+  - **S1** — `strategic_position` / `both` / pf=none / threshold 0.80
+    sub_q: Has Netflix ever stated it would not have ads?
+    key_terms: ['Netflix no ads policy', 'ad-free experience commitment']
+  - **S2** — `strategic_position` / `both` / pf=none / threshold 0.80
+    sub_q: Has Netflix introduced or announced an ad-supported tier?
+    key_terms: ['Netflix ad-supported tier', 'Basic with Ads launch', 'advertising strategy shift']
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- **S1** — terminal verdict: **covered** (coverage 0.80)
+  - iter 1: retrieved=8 coverage=0.80 verdict=covered
+- **S2** — terminal verdict: **covered** (coverage 0.95)
+  - iter 1: retrieved=8 coverage=0.95 verdict=covered
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Model used: `mistralai/mistral-large-2411`
+- Overall verdict: **refutation_to_loop**
+- Loop re-entry triggered: True (iteration 1)
+- Hypotheses (1):
+  - **h_1** [STRONGLY_REFUTED] strategy=`later_reversal` targets=`F-PROSE-nflx-q1-2018-transcript-0096` (targeted_date=2018-04-16)
+    hypothesis: Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.
+    refuting: `F-PROSE-nflx-q2-2022-letter-0060` (assertion_date=2022-07-19)
+    refuting: `F-PROSE-nflx-q3-2022-transcript-0001` (assertion_date=2022-10-18)
+    refuting: `F-PROSE-nflx-q1-2024-transcript-0057` (assertion_date=2024-04-18)
+
+## Refutation Loop
+────────────────────────────────────────────────────────────────────────────
+- iter 1 [RESOLVED] triggering=`h_1` targets=`F-PROSE-nflx-q1-2018-transcript-0096` coverage_after=0.80
+- Per-slot retrieval/verifier passes:
+  - **refutation_loop::h_1::iter1**
+    - iter 1: retrieved=8 coverage=0.80 verdict=covered
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- Claims: 9
+- Disclosed gaps: 0
+- Disclosed contradictions: 0
+- Disclosed refutations: 1
+- Adversarially probed: True
+
+**Answer text:**
+
+Netflix's stance on advertising has evolved significantly over time. In 2017-2018, Netflix maintained a firm position against advertising. On 2017-10-16, Reed Hastings stated 'our focus is not expanding in new ads at all' (F3). On 2018-01-22, Hastings emphasized that 'not having advertising as an important strategic differentiator for Netflix' (F2). On 2018-04-16, Netflix asserted 'We don't sell advertising' (F1). However, by 2022, Netflix reversed this position. On 2022-07-19, Netflix announced it was 'targeting to launch the ad-supported tier around the early part of 2023' (F4). On 2022-10-18, Greg Peters confirmed details for the new Basic with Ads tier launching in the U.S. and 11 other markets (F5). Since then, Netflix has continued developing its advertising strategy. On 2024-01-23, Peters revealed Netflix considered making the ad tier the default option similar to Amazon (F7). On 2024-04-18, Netflix stated it is 'building its ads tier over time to achieve revenue parity with non-ads offerings' (F6). This evidence shows a clear reversal from Netflix's initial anti-advertising stance to its current focus on building an ad-supported business model.
+
+**Claims with citations:**
+  1. [interpretive] In 2017-2018, Netflix maintained a firm position against advertising.
+     sources: F-PROSE-nflx-q3-2017-transcript-0097, F-PROSE-nflx-q4-2017-transcript-0070, F-PROSE-nflx-q1-2018-transcript-0096
+  2. [grounded] On 2017-10-16, Reed Hastings stated 'our focus is not expanding in new ads at all'.
+     sources: F-PROSE-nflx-q3-2017-transcript-0097
+  3. [grounded] On 2018-01-22, Reed Hastings emphasized that 'not having advertising as an important strategic differentiator for Netflix'.
+     sources: F-PROSE-nflx-q4-2017-transcript-0070
+  4. [grounded] On 2018-04-16, Netflix asserted 'We don't sell advertising'.
+     sources: F-PROSE-nflx-q1-2018-transcript-0096
+  5. [grounded] On 2022-07-19, Netflix announced it was 'targeting to launch the ad-supported tier around the early part of 2023'.
+     sources: F-PROSE-nflx-q2-2022-letter-0060
+  6. [grounded] On 2022-10-18, Greg Peters confirmed details for the new Basic with Ads tier launching in the U.S. and 11 other markets.
+     sources: F-PROSE-nflx-q3-2022-transcript-0001
+  7. [grounded] On 2024-01-23, Greg Peters revealed Netflix considered making the ad tier the default option similar to Amazon.
+     sources: F-PROSE-nflx-q4-2023-transcript-0095
+  8. [grounded] On 2024-04-18, Netflix stated it is 'building its ads tier over time to achieve revenue parity with non-ads offerings'.
+     sources: F-PROSE-nflx-q1-2024-transcript-0057
+  9. [interpretive] Netflix reversed its initial anti-advertising stance to focus on building an ad-supported business model.
+     sources: F-PROSE-nflx-q2-2022-letter-0060, F-PROSE-nflx-q3-2022-transcript-0001, F-PROSE-nflx-q1-2024-transcript-0057
+
+**Disclosed refutations:**
+  - targets=`F-PROSE-nflx-q1-2018-transcript-0096` verdict=strongly_refuted strategy=later_reversal refuting=[F-PROSE-nflx-q2-2022-letter-0060, F-PROSE-nflx-q3-2022-transcript-0001, F-PROSE-nflx-q1-2024-transcript-0057]
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 117.15s
+- Total iterations (verifier + refutation loop): 3
+- Models used: ['deepseek/deepseek-chat-v3', 'meta-llama/llama-3.3-70b-instruct', 'mistralai/mistral-large-2411', 'qwen/qwen-2.5-72b-instruct']

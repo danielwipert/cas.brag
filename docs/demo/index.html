@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>BRAG Phase 3 Demo</title>
+<style>
+
+    :root {
+      --bg: #0f1115; --panel: #161a22; --panel-2: #1e2330;
+      --border: #2a3142; --text: #d7dce5; --text-dim: #8a93a6;
+      --accent: #79b8ff; --green: #2ea043; --amber: #d29922;
+      --red: #cf222e; --blue: #218bff;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           background: var(--bg); color: var(--text); margin: 0; padding: 24px; line-height: 1.5; }
+    .container { max-width: 1024px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 6px 0; }
+    .sub { color: var(--text-dim); font-size: 13px; }
+    .panel { background: var(--panel); border: 1px solid var(--border);
+             border-radius: 8px; padding: 18px 22px; margin-top: 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; vertical-align: top; padding: 10px 8px;
+             border-bottom: 1px solid var(--border); }
+    th { color: var(--text-dim); font-weight: 600; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 999px;
+             font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+             color: #fff; }
+    .badge.green { background: var(--green); }
+    .badge.amber { background: var(--amber); color: #1a1300; }
+    .badge.blue  { background: var(--blue); }
+    .badge.red   { background: var(--red); }
+    .pill { display: inline-block; padding: 1px 7px; font-size: 11.5px;
+            border: 1px solid var(--border); border-radius: 4px;
+            color: var(--text-dim); margin-right: 4px; }
+    .summary-line { font-size: 14px; margin-top: 10px; color: var(--text-dim); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px;
+           color: #c0d3f2; background: var(--panel-2); padding: 1px 5px;
+           border-radius: 3px; }
+    
+</style></head><body><div class="container">
+<h1>BRAG Phase 3 Demo</h1>
+<div class="sub">Six curated runs of the full Validate -> Plan -> Verify -> Refute -> Generate -> Govern pipeline. Click a row to open the per-query trace.</div>
+<div class="summary-line">Acceptance: <strong>23/23</strong> checks passed across 6 queries.</div>
+<div class="panel"><table>
+<thead><tr><th>ID</th><th>Query</th><th>Outcome</th><th>Refutation</th><th>Checks</th><th>Elapsed</th></tr></thead><tbody>
+<tr><td><a href="D1.html"><code>D1</code></a></td><td>What was Netflix&#x27;s revenue for Q2 2023?</td><td><span class="badge green">NORMAL</span> <span class="pill">none</span></td><td><span class="pill">answer_strengthened</span></td><td>4/4</td><td>84.58s</td></tr>
+<tr><td><a href="D2.html"><code>D2</code></a></td><td>Did Netflix ever say it had no plans to add ads?</td><td><span class="badge green">NORMAL</span> <span class="pill">none</span></td><td><span class="pill">refutation_to_loop</span></td><td>4/4</td><td>76.67s</td></tr>
+<tr><td><a href="D3.html"><code>D3</code></a></td><td>Has Netflix&#x27;s stance on advertising changed?</td><td><span class="badge amber">PARTIAL</span> <span class="pill">refutation_unresolved</span></td><td><span class="pill">refutation_to_loop</span></td><td>4/4</td><td>117.15s</td></tr>
+<tr><td><a href="D4.html"><code>D4</code></a></td><td>Has Netflix&#x27;s password sharing policy been consistent?</td><td><span class="badge amber">PARTIAL</span> <span class="pill">slot_exhaustion</span></td><td><span class="pill">bypassed</span></td><td>4/4</td><td>87.92s</td></tr>
+<tr><td><a href="D5.html"><code>D5</code></a></td><td>Why did Netflix&#x27;s free cash flow turn positive in 2022?</td><td><span class="badge blue">CLARIFICATION_REQUEST</span> <span class="pill">slot_exhaustion</span></td><td><span class="pill">bypassed</span></td><td>3/3</td><td>34.01s</td></tr>
+<tr><td><a href="D6.html"><code>D6</code></a></td><td>What&#x27;s Disney&#x27;s streaming subscriber count?</td><td><span class="badge red">HARD_HALT</span> <span class="pill">input_failure</span></td><td><span class="pill">bypassed</span></td><td>4/4</td><td>0.0s</td></tr>
+</tbody></table></div>
+</div></body></html>

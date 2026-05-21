@@ -1,0 +1,534 @@
+{
+  "run_id": "run-6ca520da",
+  "query": {
+    "original_query": "Has Netflix's password sharing policy been consistent?",
+    "complexity_tier": "simple",
+    "validation_status": "passed"
+  },
+  "decomposition_plan": {
+    "query_id": "q_03d028d87c",
+    "original_query": "Has Netflix's password sharing policy been consistent?",
+    "complexity_tier": "simple",
+    "synthesis_strategy": "contrast",
+    "slots": [
+      {
+        "slot_id": "S1",
+        "sub_question": "What is Netflix's current stated policy on password sharing?",
+        "evidence_type": "strategic_position",
+        "target_layer": "both",
+        "period_filter": null,
+        "key_terms": [
+          "Netflix password sharing policy 2024",
+          "account sharing rules",
+          "password sharing enforcement"
+        ],
+        "coverage_threshold": 0.8
+      },
+      {
+        "slot_id": "S2",
+        "sub_question": "Have there been any past statements or policies from Netflix that contradict its current password sharing stance?",
+        "evidence_type": "contradiction_detection",
+        "target_layer": "both",
+        "period_filter": null,
+        "key_terms": [
+          "Netflix password sharing history",
+          "past account sharing policies",
+          "contradictory statements on password sharing"
+        ],
+        "coverage_threshold": 0.8
+      }
+    ]
+  },
+  "retrieval_passes": [
+    {
+      "retrieval_id": "R1_S1_iter1",
+      "slot_id": "S1",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "What is Netflix's current stated policy on password sharing?",
+      "bm25_terms": [
+        "Netflix password sharing policy 2024",
+        "account sharing rules",
+        "password sharing enforcement"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2016-transcript-0048",
+          "source": "fact",
+          "rrf_score": 0.032522,
+          "vector_score": 0.848743,
+          "bm25_score": 45.85371
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2017-transcript-0032",
+          "source": "fact",
+          "rrf_score": 0.032018,
+          "vector_score": 0.86245,
+          "bm25_score": 40.343302
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2017-transcript-0033",
+          "source": "fact",
+          "rrf_score": 0.032002,
+          "vector_score": 0.839512,
+          "bm25_score": 41.556685
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2016-transcript-0047",
+          "source": "fact",
+          "rrf_score": 0.031498,
+          "vector_score": 0.818405,
+          "bm25_score": 40.343302
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0011",
+          "source": "fact",
+          "rrf_score": 0.029418,
+          "vector_score": 0.774906,
+          "bm25_score": 31.947889
+        },
+        {
+          "candidate_id": "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+          "source": "chunk",
+          "rrf_score": 0.027973,
+          "vector_score": 0.781556,
+          "bm25_score": 36.190189
+        },
+        {
+          "candidate_id": "nflx-q3-2016-transcript__prepared_remarks__chunk_10",
+          "source": "chunk",
+          "rrf_score": 0.027397,
+          "vector_score": 0.713837,
+          "bm25_score": 34.979958
+        },
+        {
+          "candidate_id": "nflx-q4-2022-transcript__qa__chunk_10",
+          "source": "chunk",
+          "rrf_score": 0.027242,
+          "vector_score": 0.698323,
+          "bm25_score": 39.091754
+        }
+      ],
+      "memory_exclusions": []
+    },
+    {
+      "retrieval_id": "R1_S1_iter2",
+      "slot_id": "S1",
+      "iteration": 2,
+      "pass_origin": "verifier_loop",
+      "vector_query": "What is Netflix's current stated policy on password sharing? | Gap from prior pass: The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.",
+      "bm25_terms": [
+        "Netflix password sharing policy 2024",
+        "account sharing rules",
+        "password sharing enforcement"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2020-q3-0250",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.711958,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0091",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": null,
+          "bm25_score": 35.203842
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q1-0084",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.701022,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0090",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 33.496931
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q2-0067",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.701022,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0009",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 29.309902
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q3-0099",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.701022,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2022-transcript-0026",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 28.799439
+        }
+      ],
+      "memory_exclusions": [
+        "F-PROSE-nflx-q1-2023-transcript-0011",
+        "F-PROSE-nflx-q3-2016-transcript-0047",
+        "F-PROSE-nflx-q3-2016-transcript-0048",
+        "F-PROSE-nflx-q3-2017-transcript-0032",
+        "F-PROSE-nflx-q3-2017-transcript-0033",
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_10",
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+        "nflx-q4-2022-transcript__qa__chunk_10"
+      ]
+    },
+    {
+      "retrieval_id": "R1_S2_iter1",
+      "slot_id": "S2",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "Have there been any past statements or policies from Netflix that contradict its current password sharing stance?",
+      "bm25_terms": [
+        "Netflix password sharing history",
+        "past account sharing policies",
+        "contradictory statements on password sharing"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2017-transcript-0033",
+          "source": "fact",
+          "rrf_score": 0.032522,
+          "vector_score": 0.845544,
+          "bm25_score": 41.556685
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2016-transcript-0048",
+          "source": "fact",
+          "rrf_score": 0.032266,
+          "vector_score": 0.817264,
+          "bm25_score": 45.85371
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2017-transcript-0032",
+          "source": "fact",
+          "rrf_score": 0.031754,
+          "vector_score": 0.844611,
+          "bm25_score": 40.343302
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2016-transcript-0047",
+          "source": "fact",
+          "rrf_score": 0.031498,
+          "vector_score": 0.80542,
+          "bm25_score": 40.343302
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0091",
+          "source": "fact",
+          "rrf_score": 0.030769,
+          "vector_score": 0.764396,
+          "bm25_score": 35.203842
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0090",
+          "source": "fact",
+          "rrf_score": 0.029437,
+          "vector_score": 0.743746,
+          "bm25_score": 33.496931
+        },
+        {
+          "candidate_id": "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+          "source": "chunk",
+          "rrf_score": 0.027783,
+          "vector_score": 0.798539,
+          "bm25_score": 37.712836
+        },
+        {
+          "candidate_id": "nflx-q3-2016-transcript__prepared_remarks__chunk_10",
+          "source": "chunk",
+          "rrf_score": 0.027222,
+          "vector_score": 0.726412,
+          "bm25_score": 31.787035
+        }
+      ],
+      "memory_exclusions": []
+    }
+  ],
+  "verifier_verdicts": [
+    {
+      "slot_id": "S1",
+      "coverage_score": 0.5,
+      "verdict": "gap",
+      "gap_description": "The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.",
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q3-2016-transcript-0048",
+        "F-PROSE-nflx-q3-2017-transcript-0032",
+        "F-PROSE-nflx-q3-2017-transcript-0033",
+        "F-PROSE-nflx-q3-2016-transcript-0047",
+        "F-PROSE-nflx-q1-2023-transcript-0011"
+      ],
+      "rejected_candidates": [
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_10",
+        "nflx-q4-2022-transcript__qa__chunk_10"
+      ]
+    },
+    {
+      "slot_id": "S1",
+      "coverage_score": 0.5,
+      "verdict": "gap",
+      "gap_description": "The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.",
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q1-2024-transcript-0091",
+        "F-PROSE-nflx-q1-2023-transcript-0009",
+        "F-PROSE-nflx-q1-2022-transcript-0026"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-10q-2020-q3-0250",
+        "F-PROSE-nflx-10q-2023-q1-0084",
+        "F-PROSE-nflx-10q-2023-q2-0067",
+        "F-PROSE-nflx-10q-2023-q3-0099",
+        "F-PROSE-nflx-q1-2023-transcript-0090"
+      ]
+    },
+    {
+      "slot_id": "S2",
+      "coverage_score": 0.85,
+      "verdict": "covered",
+      "gap_description": null,
+      "contradiction_details": [
+        {
+          "description": "Past statements indicate that Netflix considered password sharing as something to live with and not a significant issue, while recent statements suggest that Netflix is taking measures to reduce password sharing.",
+          "conflicting_ids": [
+            "F-PROSE-nflx-q3-2017-transcript-0033",
+            "F-PROSE-nflx-q3-2016-transcript-0048",
+            "F-PROSE-nflx-q3-2017-transcript-0032",
+            "F-PROSE-nflx-q3-2016-transcript-0047",
+            "F-PROSE-nflx-q1-2024-transcript-0091"
+          ]
+        }
+      ],
+      "supported_candidates": [
+        "F-PROSE-nflx-q3-2017-transcript-0033",
+        "F-PROSE-nflx-q3-2016-transcript-0048",
+        "F-PROSE-nflx-q3-2017-transcript-0032",
+        "F-PROSE-nflx-q3-2016-transcript-0047",
+        "F-PROSE-nflx-q1-2024-transcript-0091"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q1-2023-transcript-0090",
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+        "nflx-q3-2016-transcript__prepared_remarks__chunk_10"
+      ]
+    }
+  ],
+  "refutation_report": null,
+  "coverage_progression": [
+    {
+      "slot_id": "S1",
+      "iteration": 1,
+      "coverage_score": 0.5
+    },
+    {
+      "slot_id": "S1",
+      "iteration": 2,
+      "coverage_score": 0.5
+    },
+    {
+      "slot_id": "S2",
+      "iteration": 3,
+      "coverage_score": 0.85
+    }
+  ],
+  "refutation_loop_iterations": [],
+  "final_slot_states": [
+    {
+      "slot_id": "S1",
+      "terminal_verdict": "exhausted",
+      "final_coverage": 0.5
+    },
+    {
+      "slot_id": "S2",
+      "terminal_verdict": "covered",
+      "final_coverage": 0.85
+    }
+  ],
+  "answer": {
+    "answer_text": "Netflix's password sharing policy has evolved over time. In 2016, Reed Hastings stated that Netflix had no plans to make any changes to password sharing and considered it something to live with due to legitimate sharing (2016-10-17). Greg Peters echoed this sentiment in 2017, stating that password sharing was not a huge issue and that Netflix was not prioritizing significant measures to stem it (2017-10-16). By 2022, Spencer Neumann noted that Netflix was still working through the ultimate solution for account sharing (2022-04-19). In 2023, Greg Peters reported that the last country rollouts for password sharing had gone well and were consistent with earlier results in Latin America (2023-04-18). Most recently, in 2024, Netflix acknowledged that cutting off non-paying viewers from password sharing would result in some loss of viewing hours (2024-04-18). However, the evidence does not provide a clear, current stated policy on password sharing for 2024.",
+    "claims": [
+      {
+        "claim_text": "In 2016, Reed Hastings stated that Netflix had no plans to make any changes to password sharing and considered it something to live with due to legitimate sharing.",
+        "source_ids": [
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q3-2016-transcript-0048"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "In 2017, Greg Peters stated that password sharing was not a huge issue and that Netflix was not prioritizing significant measures to stem it.",
+        "source_ids": [
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2017-transcript-0033"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "In 2022, Spencer Neumann noted that Netflix was still working through the ultimate solution for account sharing.",
+        "source_ids": [
+          "F-PROSE-nflx-q1-2022-transcript-0026"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "In 2023, Greg Peters reported that the last country rollouts for password sharing had gone well and were consistent with earlier results in Latin America.",
+        "source_ids": [
+          "F-PROSE-nflx-q1-2023-transcript-0009"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "In 2024, Netflix acknowledged that cutting off non-paying viewers from password sharing would result in some loss of viewing hours.",
+        "source_ids": [
+          "F-PROSE-nflx-q1-2024-transcript-0091"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "The evidence does not provide a clear, current stated policy on password sharing for 2024.",
+        "source_ids": [],
+        "claim_type": "interpretive"
+      }
+    ],
+    "disclosed_gaps": [
+      {
+        "slot_id": "S1",
+        "gap_description": "The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024."
+      }
+    ],
+    "disclosed_contradictions": [
+      {
+        "description": "Past statements indicate that Netflix considered password sharing as something to live with and not a significant issue, while recent statements suggest that Netflix is taking measures to reduce password sharing.",
+        "conflicting_ids": [
+          "F-PROSE-nflx-q3-2017-transcript-0033",
+          "F-PROSE-nflx-q3-2016-transcript-0048",
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q1-2024-transcript-0091"
+        ]
+      }
+    ],
+    "disclosed_refutations": [],
+    "adversarially_probed": false,
+    "degradation_level": 1
+  },
+  "governance_violations": [],
+  "degradation_level": 1,
+  "degradation_cause": "slot_exhaustion",
+  "total_tokens_consumed": 0,
+  "total_iterations": 3,
+  "elapsed_seconds": 87.915,
+  "models_used": [
+    "deepseek/deepseek-chat-v3",
+    "meta-llama/llama-3.3-70b-instruct",
+    "qwen/qwen-2.5-72b-instruct"
+  ],
+  "extra": {
+    "ledger": {
+      "run_id": "run-6ca520da",
+      "retrieved_ids": {
+        "S1": [
+          "F-PROSE-nflx-q3-2016-transcript-0048",
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2017-transcript-0033",
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q1-2023-transcript-0011",
+          "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+          "nflx-q3-2016-transcript__prepared_remarks__chunk_10",
+          "nflx-q4-2022-transcript__qa__chunk_10",
+          "F-PROSE-nflx-10q-2020-q3-0250",
+          "F-PROSE-nflx-q1-2024-transcript-0091",
+          "F-PROSE-nflx-10q-2023-q1-0084",
+          "F-PROSE-nflx-q1-2023-transcript-0090",
+          "F-PROSE-nflx-10q-2023-q2-0067",
+          "F-PROSE-nflx-q1-2023-transcript-0009",
+          "F-PROSE-nflx-10q-2023-q3-0099",
+          "F-PROSE-nflx-q1-2022-transcript-0026"
+        ],
+        "S2": [
+          "F-PROSE-nflx-q3-2017-transcript-0033",
+          "F-PROSE-nflx-q3-2016-transcript-0048",
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q1-2024-transcript-0091",
+          "F-PROSE-nflx-q1-2023-transcript-0090",
+          "nflx-q3-2016-transcript__prepared_remarks__chunk_11",
+          "nflx-q3-2016-transcript__prepared_remarks__chunk_10"
+        ]
+      },
+      "exhausted_queries": [],
+      "coverage_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "coverage_score": 0.5
+        },
+        {
+          "slot_id": "S1",
+          "iteration": 2,
+          "coverage_score": 0.5
+        },
+        {
+          "slot_id": "S2",
+          "iteration": 1,
+          "coverage_score": 0.85
+        }
+      ],
+      "gap_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "gap_description": "The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024."
+        }
+      ],
+      "refutation_hypotheses_tested": [],
+      "refutation_loop_history": [],
+      "supported_candidates": {
+        "S1": [
+          "F-PROSE-nflx-q3-2016-transcript-0048",
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2017-transcript-0033",
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q1-2023-transcript-0011",
+          "F-PROSE-nflx-q1-2024-transcript-0091",
+          "F-PROSE-nflx-q1-2023-transcript-0009",
+          "F-PROSE-nflx-q1-2022-transcript-0026"
+        ],
+        "S2": [
+          "F-PROSE-nflx-q3-2017-transcript-0033",
+          "F-PROSE-nflx-q3-2016-transcript-0048",
+          "F-PROSE-nflx-q3-2017-transcript-0032",
+          "F-PROSE-nflx-q3-2016-transcript-0047",
+          "F-PROSE-nflx-q1-2024-transcript-0091"
+        ]
+      },
+      "session_scope": "session"
+    },
+    "warnings": [],
+    "adversarially_probed": false,
+    "refutation_bypass_reason": "degradation=PARTIAL \u2014 refutation bypassed"
+  }
+}

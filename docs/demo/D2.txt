@@ -1,0 +1,78 @@
+# BRAG Execution Trace
+
+**Query:** Did Netflix ever say it had no plans to add ads?
+**Run ID:** `run-a0aa6a46`
+**Complexity tier:** simple
+**Final degradation level:** NORMAL (cause: none)
+**Badges:** [ADVERSARIALLY PROBED]
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `passed`
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `integrate`
+- Slots (1):
+  - **S1** — `strategic_position` / `both` / pf=none / threshold 0.80
+    sub_q: Did Netflix ever state it had no plans to add ads?
+    key_terms: ['Netflix no ads plan', 'no advertising strategy', 'ad-free commitment']
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- **S1** — terminal verdict: **covered** (coverage 0.80)
+  - iter 1: retrieved=8 coverage=0.80 verdict=covered
+    contradiction: Conflicting statements about Netflix's plans for ads. One statement suggests no plans to add ads, while another suggests introducing ads as a dimension of plan structure. (conflicting=['F-PROSE-nflx-q4-2017-transcript-0070', 'F-PROSE-nflx-q2-2022-transcript-0031'])
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Model used: `mistralai/mistral-large-2411`
+- Overall verdict: **refutation_to_loop**
+- Loop re-entry triggered: True (iteration 1)
+- Hypotheses (1):
+  - **h_1** [STRONGLY_REFUTED] strategy=`later_reversal` targets=`F-PROSE-nflx-q4-2017-transcript-0070` (targeted_date=2018-01-22)
+    hypothesis: Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.
+    refuting: `F-PROSE-nflx-q2-2022-letter-0060` (assertion_date=2022-07-19)
+    refuting: `F-PROSE-nflx-q3-2022-transcript-0001` (assertion_date=2022-10-18)
+
+## Refutation Loop
+────────────────────────────────────────────────────────────────────────────
+- iter 1 [RESOLVED] triggering=`h_1` targets=`F-PROSE-nflx-q4-2017-transcript-0070` coverage_after=0.80
+- Per-slot retrieval/verifier passes:
+  - **refutation_loop::h_1::iter1**
+    - iter 1: retrieved=8 coverage=0.80 verdict=covered
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- Claims: 2
+- Disclosed gaps: 0
+- Disclosed contradictions: 1
+- Disclosed refutations: 1
+- Adversarially probed: True
+
+**Answer text:**
+
+In 2017 and 2018, Netflix executives stated that the company had no plans to add advertising. Reed Hastings noted in the Q3 2017 earnings call (2017-10-16) that 'Netflix's focus is not expanding in new ads at all,' and reiterated in the Q4 2017 earnings call (2018-01-22) that 'not having advertising is an important strategic differentiator for Netflix.' However, Netflix reversed this position in 2022. The Q2 2022 shareholder letter (2022-07-19) announced plans to launch an ad-supported tier 'around the early part of 2023,' and Greg Peters confirmed in the Q3 2022 earnings call (2022-10-18) that Netflix had 'announced details for the new Basic with Ads tier last week launching in the U.S. and 11 other markets.'
+
+**Claims with citations:**
+  1. [grounded] In 2017 and 2018, Netflix executives stated that the company had no plans to add advertising.
+     sources: F-PROSE-nflx-q3-2017-transcript-0097, F-PROSE-nflx-q4-2017-transcript-0070
+  2. [grounded] Netflix reversed its position in 2022 by announcing plans to launch an ad-supported tier.
+     sources: F-PROSE-nflx-q2-2022-letter-0060, F-PROSE-nflx-q3-2022-transcript-0001
+
+**Disclosed refutations:**
+  - targets=`F-PROSE-nflx-q4-2017-transcript-0070` verdict=strongly_refuted strategy=later_reversal refuting=[F-PROSE-nflx-q2-2022-letter-0060, F-PROSE-nflx-q3-2022-transcript-0001]
+
+**Disclosed contradictions:**
+  - Conflicting statements about Netflix's plans for ads. One statement suggests no plans to add ads, while another suggests introducing ads as a dimension of plan structure.  conflicting=[F-PROSE-nflx-q4-2017-transcript-0070, F-PROSE-nflx-q2-2022-transcript-0031]
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 76.67s
+- Total iterations (verifier + refutation loop): 2
+- Models used: ['deepseek/deepseek-chat-v3', 'meta-llama/llama-3.3-70b-instruct', 'mistralai/mistral-large-2411', 'qwen/qwen-2.5-72b-instruct']

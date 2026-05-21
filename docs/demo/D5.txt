@@ -1,0 +1,56 @@
+# BRAG Execution Trace
+
+**Query:** Why did Netflix's free cash flow turn positive in 2022?
+**Run ID:** `run-c6344808`
+**Complexity tier:** simple
+**Final degradation level:** CLARIFICATION_REQUEST (cause: slot_exhaustion)
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `passed`
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `integrate`
+- Slots (1):
+  - **S1** — `causal_explanation` / `both` / pf=none / threshold 0.80
+    sub_q: What factors contributed to Netflix's free cash flow turning positive in 2022?
+    key_terms: ['Netflix free cash flow improvement 2022', 'cash flow generation drivers', '2022 operating cash flow']
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- **S1** — terminal verdict: **exhausted** (coverage 0.20)
+  - iter 1: retrieved=8 coverage=0.50 verdict=gap
+    gap: The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.
+  - iter 2: retrieved=8 coverage=0.20 verdict=gap
+    gap: The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Bypassed: degradation=CLARIFICATION_REQUEST — refutation bypassed
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- Claims: 0
+- Disclosed gaps: 1
+- Disclosed contradictions: 0
+- Disclosed refutations: 0
+- Adversarially probed: False
+
+**Answer text:**
+
+I can't answer this question from the Netflix corpus available to me — no verified evidence was found across the planned retrieval slots. Narrow the question to a specific metric, period, or filing so I can ground the answer in primary sources.
+
+**Disclosed gaps:**
+  - slot `S1`: The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 34.01s
+- Total iterations (verifier + refutation loop): 2
+- Models used: ['meta-llama/llama-3.3-70b-instruct', 'qwen/qwen-2.5-72b-instruct']

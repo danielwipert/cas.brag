@@ -1,0 +1,60 @@
+# BRAG Execution Trace
+
+**Query:** What was Netflix's revenue for Q2 2023?
+**Run ID:** `run-26641836`
+**Complexity tier:** simple
+**Final degradation level:** NORMAL (cause: none)
+**Badges:** [ADVERSARIALLY PROBED]
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `passed`
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `integrate`
+- Slots (1):
+  - **S1** — `specific_metric` / `fact_store` / pf=2023Q2 / threshold 0.80
+    sub_q: What was Netflix's revenue for Q2 2023?
+    key_terms: ['Netflix revenue Q2 2023', 'Q2 2023 revenue']
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- **S1** — terminal verdict: **covered** (coverage 1.00)
+  - iter 1: retrieved=6 coverage=1.00 verdict=covered
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Model used: `mistralai/mistral-large-2411`
+- Overall verdict: **answer_strengthened**
+- Loop re-entry triggered: False
+- Hypotheses (1):
+  - **h_1** [UNREFUTED] strategy=`restated_value` targets=`F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2` (targeted_date=2024-07-19)
+    hypothesis: Netflix's 2025 10-K restated Q2 2023 revenues to $8.0 billion.
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- Claims: 1
+- Disclosed gaps: 0
+- Disclosed contradictions: 0
+- Disclosed refutations: 0
+- Adversarially probed: True
+
+**Answer text:**
+
+Netflix's Q2 2023 revenue was $8,187,301,000, as reported in both the Q2 2023 and Q2 2024 10-Q filings.
+
+**Claims with citations:**
+  1. [grounded] Netflix's Q2 2023 revenue was $8,187,301,000.
+     sources: F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2, F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 46.07s
+- Total iterations (verifier + refutation loop): 1
+- Models used: ['deepseek/deepseek-chat-v3', 'meta-llama/llama-3.3-70b-instruct', 'mistralai/mistral-large-2411', 'qwen/qwen-2.5-72b-instruct']

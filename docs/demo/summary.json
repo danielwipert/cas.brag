@@ -1,0 +1,86 @@
+{
+  "overall_pass": 23,
+  "overall_total": 23,
+  "queries_passed": 6,
+  "queries_total": 6,
+  "rows": [
+    {
+      "did": "D1",
+      "query": "What was Netflix's revenue for Q2 2023?",
+      "elapsed_s": "84.58",
+      "passed": "4",
+      "total": "4",
+      "degradation_level": "NORMAL",
+      "degradation_cause": "none",
+      "refutation_overall": "answer_strengthened",
+      "html": "D1.html",
+      "json": "D1.json",
+      "txt": "D1.txt"
+    },
+    {
+      "did": "D2",
+      "query": "Did Netflix ever say it had no plans to add ads?",
+      "elapsed_s": "76.67",
+      "passed": "4",
+      "total": "4",
+      "degradation_level": "NORMAL",
+      "degradation_cause": "none",
+      "refutation_overall": "refutation_to_loop",
+      "html": "D2.html",
+      "json": "D2.json",
+      "txt": "D2.txt"
+    },
+    {
+      "did": "D3",
+      "query": "Has Netflix's stance on advertising changed?",
+      "elapsed_s": "117.15",
+      "passed": "4",
+      "total": "4",
+      "degradation_level": "PARTIAL",
+      "degradation_cause": "refutation_unresolved",
+      "refutation_overall": "refutation_to_loop",
+      "html": "D3.html",
+      "json": "D3.json",
+      "txt": "D3.txt"
+    },
+    {
+      "did": "D4",
+      "query": "Has Netflix's password sharing policy been consistent?",
+      "elapsed_s": "87.92",
+      "passed": "4",
+      "total": "4",
+      "degradation_level": "PARTIAL",
+      "degradation_cause": "slot_exhaustion",
+      "refutation_overall": "bypassed",
+      "html": "D4.html",
+      "json": "D4.json",
+      "txt": "D4.txt"
+    },
+    {
+      "did": "D5",
+      "query": "Why did Netflix's free cash flow turn positive in 2022?",
+      "elapsed_s": "34.01",
+      "passed": "3",
+      "total": "3",
+      "degradation_level": "CLARIFICATION_REQUEST",
+      "degradation_cause": "slot_exhaustion",
+      "refutation_overall": "bypassed",
+      "html": "D5.html",
+      "json": "D5.json",
+      "txt": "D5.txt"
+    },
+    {
+      "did": "D6",
+      "query": "What's Disney's streaming subscriber count?",
+      "elapsed_s": "0.0",
+      "passed": "4",
+      "total": "4",
+      "degradation_level": "HARD_HALT",
+      "degradation_cause": "input_failure",
+      "refutation_overall": "bypassed",
+      "html": "D6.html",
+      "json": "D6.json",
+      "txt": "D6.txt"
+    }
+  ]
+}

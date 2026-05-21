@@ -1,0 +1,291 @@
+{
+  "run_id": "run-26641836",
+  "query": {
+    "original_query": "What was Netflix's revenue for Q2 2023?",
+    "complexity_tier": "simple",
+    "validation_status": "passed"
+  },
+  "decomposition_plan": {
+    "query_id": "q_8484b7a6b0",
+    "original_query": "What was Netflix's revenue for Q2 2023?",
+    "complexity_tier": "simple",
+    "synthesis_strategy": "integrate",
+    "slots": [
+      {
+        "slot_id": "S1",
+        "sub_question": "What was Netflix's revenue for Q2 2023?",
+        "evidence_type": "specific_metric",
+        "target_layer": "fact_store",
+        "period_filter": "2023Q2",
+        "key_terms": [
+          "Netflix revenue Q2 2023",
+          "Q2 2023 revenue"
+        ],
+        "coverage_threshold": 0.8
+      }
+    ]
+  },
+  "retrieval_passes": [
+    {
+      "retrieval_id": "R1_S1_iter1",
+      "slot_id": "S1",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "What was Netflix's revenue for Q2 2023?",
+      "bm25_terms": [
+        "Netflix revenue Q2 2023",
+        "Q2 2023 revenue"
+      ],
+      "period_filter": "2023Q2",
+      "candidates": [
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.852778,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q2-0082",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": null,
+          "bm25_score": 22.020279
+        },
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.852778,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-letter-0017",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 19.514053
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q2-0085",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 18.104888
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2023-q2-0088",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 18.039085
+        }
+      ],
+      "memory_exclusions": []
+    },
+    {
+      "retrieval_id": "REF_h_1_iter1",
+      "slot_id": "refutation::h_1",
+      "iteration": 1,
+      "pass_origin": "refutation_probe",
+      "vector_query": "Netflix's 2025 10-K restated Q2 2023 revenues to $8.0 billion.",
+      "bm25_terms": [
+        "Netflix's",
+        "restated",
+        "revenues",
+        "billion"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.931451,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10k-2025-0518",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": null,
+          "bm25_score": 9.164559
+        },
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2023-q3-us-gaap-Revenues-2023Q3",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.911519,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10k-2021-0291",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 7.287352
+        },
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2024-q3-us-gaap-Revenues-2023Q3",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.911519,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10k-2019-0262",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 6.843439
+        },
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2022-q1-us-gaap-AssetsCurrent-2022-03-31",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.899327,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-XBRL-nflx-10q-2016-q2-us-gaap-Revenues-2015Q2",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 6.576605
+        }
+      ],
+      "memory_exclusions": [
+        "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2"
+      ]
+    }
+  ],
+  "verifier_verdicts": [
+    {
+      "slot_id": "S1",
+      "coverage_score": 1.0,
+      "verdict": "covered",
+      "gap_description": null,
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+        "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-10q-2023-q2-0082",
+        "F-PROSE-nflx-q1-2023-letter-0017",
+        "F-PROSE-nflx-10q-2023-q2-0085",
+        "F-PROSE-nflx-10q-2023-q2-0088"
+      ]
+    }
+  ],
+  "refutation_report": {
+    "run_id": "run-26641836",
+    "model_used": "mistralai/mistral-large-2411",
+    "hypotheses": [
+      {
+        "hypothesis_id": "h_1",
+        "targets_claim_id": "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2",
+        "hypothesis_text": "Netflix's 2025 10-K restated Q2 2023 revenues to $8.0 billion.",
+        "rationale": "If Netflix restated their Q2 2023 revenues to a different value in a subsequent filing, it would contradict the initially reported value.",
+        "strategy": "restated_value",
+        "retrieval_record_id": "REF_h_1_iter1",
+        "refutation_verdict": "unrefuted",
+        "evidence_ids": []
+      }
+    ],
+    "overall_verdict": "answer_strengthened",
+    "triggered_loop_reentry": false,
+    "loop_reentry_iteration": null
+  },
+  "coverage_progression": [
+    {
+      "slot_id": "S1",
+      "iteration": 1,
+      "coverage_score": 1.0
+    }
+  ],
+  "refutation_loop_iterations": [],
+  "final_slot_states": [
+    {
+      "slot_id": "S1",
+      "terminal_verdict": "covered",
+      "final_coverage": 1.0
+    }
+  ],
+  "answer": {
+    "answer_text": "Netflix's Q2 2023 revenue was $8,187,301,000, as reported in both the Q2 2023 and Q2 2024 10-Q filings.",
+    "claims": [
+      {
+        "claim_text": "Netflix's Q2 2023 revenue was $8,187,301,000.",
+        "source_ids": [
+          "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+          "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2"
+        ],
+        "claim_type": "grounded"
+      }
+    ],
+    "disclosed_gaps": [],
+    "disclosed_contradictions": [],
+    "disclosed_refutations": [],
+    "adversarially_probed": true,
+    "degradation_level": 0
+  },
+  "governance_violations": [],
+  "degradation_level": 0,
+  "degradation_cause": "none",
+  "total_tokens_consumed": 0,
+  "total_iterations": 1,
+  "elapsed_seconds": 46.074,
+  "models_used": [
+    "deepseek/deepseek-chat-v3",
+    "meta-llama/llama-3.3-70b-instruct",
+    "mistralai/mistral-large-2411",
+    "qwen/qwen-2.5-72b-instruct"
+  ],
+  "extra": {
+    "ledger": {
+      "run_id": "run-26641836",
+      "retrieved_ids": {
+        "S1": [
+          "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+          "F-PROSE-nflx-10q-2023-q2-0082",
+          "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2",
+          "F-PROSE-nflx-q1-2023-letter-0017",
+          "F-PROSE-nflx-10q-2023-q2-0085",
+          "F-PROSE-nflx-10q-2023-q2-0088"
+        ]
+      },
+      "exhausted_queries": [],
+      "coverage_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "coverage_score": 1.0
+        }
+      ],
+      "gap_history": [],
+      "refutation_hypotheses_tested": [
+        {
+          "hypothesis_id": "h_1",
+          "targets_claim_id": "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2",
+          "hypothesis_text": "Netflix's 2025 10-K restated Q2 2023 revenues to $8.0 billion.",
+          "rationale": "If Netflix restated their Q2 2023 revenues to a different value in a subsequent filing, it would contradict the initially reported value.",
+          "strategy": "restated_value",
+          "retrieval_record_id": "REF_h_1_iter1",
+          "refutation_verdict": "unrefuted",
+          "evidence_ids": []
+        }
+      ],
+      "refutation_loop_history": [],
+      "supported_candidates": {
+        "S1": [
+          "F-XBRL-nflx-10q-2023-q2-us-gaap-Revenues-2023Q2",
+          "F-XBRL-nflx-10q-2024-q2-us-gaap-Revenues-2023Q2"
+        ]
+      },
+      "session_scope": "session"
+    },
+    "warnings": [],
+    "adversarially_probed": true
+  }
+}

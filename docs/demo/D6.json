@@ -1,0 +1,32 @@
+{
+  "run_id": "run-fc8b2a34",
+  "query": {
+    "original_query": "What's Disney's streaming subscriber count?",
+    "complexity_tier": "simple",
+    "validation_status": "rejected"
+  },
+  "decomposition_plan": {
+    "query_id": "run-fc8b2a34",
+    "original_query": "What's Disney's streaming subscriber count?",
+    "complexity_tier": "simple",
+    "synthesis_strategy": "integrate",
+    "slots": []
+  },
+  "retrieval_passes": [],
+  "verifier_verdicts": [],
+  "refutation_report": null,
+  "coverage_progression": [],
+  "refutation_loop_iterations": [],
+  "final_slot_states": [],
+  "answer": null,
+  "governance_violations": [],
+  "degradation_level": 3,
+  "degradation_cause": "input_failure",
+  "total_tokens_consumed": 0,
+  "total_iterations": 0,
+  "elapsed_seconds": 0.0,
+  "models_used": [],
+  "extra": {
+    "rejection_reason": "Query is about Disney, which is outside BRAG's corpus. BRAG answers questions about Netflix's public reporting only. Rephrase to ask about Netflix, or include Netflix as the subject of the comparison."
+  }
+}

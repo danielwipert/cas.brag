@@ -1,0 +1,39 @@
+# BRAG Execution Trace
+
+**Query:** What's Disney's streaming subscriber count?
+**Run ID:** `run-fc8b2a34`
+**Complexity tier:** simple
+**Final degradation level:** HARD_HALT (cause: input_failure)
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `rejected`
+- Rejection reason: Query is about Disney, which is outside BRAG's corpus. BRAG answers questions about Netflix's public reporting only. Rephrase to ask about Netflix, or include Netflix as the subject of the comparison.
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `integrate`
+- Slots (0):
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- (no verifier-loop activity)
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Bypassed: (not run)
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- (no answer produced)
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 0.00s
+- Total iterations (verifier + refutation loop): 0
+- Models used: []

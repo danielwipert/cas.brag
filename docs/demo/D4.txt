@@ -1,0 +1,79 @@
+# BRAG Execution Trace
+
+**Query:** Has Netflix's password sharing policy been consistent?
+**Run ID:** `run-6ca520da`
+**Complexity tier:** simple
+**Final degradation level:** PARTIAL (cause: slot_exhaustion)
+
+## Input Validation
+────────────────────────────────────────────────────────────────────────────
+- Status: `passed`
+- Warnings: none
+
+## Decomposition Plan
+────────────────────────────────────────────────────────────────────────────
+- Synthesis strategy: `contrast`
+- Slots (2):
+  - **S1** — `strategic_position` / `both` / pf=none / threshold 0.80
+    sub_q: What is Netflix's current stated policy on password sharing?
+    key_terms: ['Netflix password sharing policy 2024', 'account sharing rules', 'password sharing enforcement']
+  - **S2** — `contradiction_detection` / `both` / pf=none / threshold 0.80
+    sub_q: Have there been any past statements or policies from Netflix that contradict its current password sharing stance?
+    key_terms: ['Netflix password sharing history', 'past account sharing policies', 'contradictory statements on password sharing']
+
+## Verifier Loop
+────────────────────────────────────────────────────────────────────────────
+- **S1** — terminal verdict: **exhausted** (coverage 0.50)
+  - iter 1: retrieved=8 coverage=0.50 verdict=gap
+    gap: The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.
+  - iter 2: retrieved=8 coverage=0.50 verdict=gap
+    gap: The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.
+- **S2** — terminal verdict: **covered** (coverage 0.85)
+  - iter 1: retrieved=8 coverage=0.85 verdict=covered
+    contradiction: Past statements indicate that Netflix considered password sharing as something to live with and not a significant issue, while recent statements suggest that Netflix is taking measures to reduce password sharing. (conflicting=['F-PROSE-nflx-q3-2017-transcript-0033', 'F-PROSE-nflx-q3-2016-transcript-0048', 'F-PROSE-nflx-q3-2017-transcript-0032', 'F-PROSE-nflx-q3-2016-transcript-0047', 'F-PROSE-nflx-q1-2024-transcript-0091'])
+
+## Refutation Stage
+────────────────────────────────────────────────────────────────────────────
+- Bypassed: degradation=PARTIAL — refutation bypassed
+
+## Generator Output
+────────────────────────────────────────────────────────────────────────────
+- Claims: 6
+- Disclosed gaps: 1
+- Disclosed contradictions: 1
+- Disclosed refutations: 0
+- Adversarially probed: False
+
+**Answer text:**
+
+Netflix's password sharing policy has evolved over time. In 2016, Reed Hastings stated that Netflix had no plans to make any changes to password sharing and considered it something to live with due to legitimate sharing (2016-10-17). Greg Peters echoed this sentiment in 2017, stating that password sharing was not a huge issue and that Netflix was not prioritizing significant measures to stem it (2017-10-16). By 2022, Spencer Neumann noted that Netflix was still working through the ultimate solution for account sharing (2022-04-19). In 2023, Greg Peters reported that the last country rollouts for password sharing had gone well and were consistent with earlier results in Latin America (2023-04-18). Most recently, in 2024, Netflix acknowledged that cutting off non-paying viewers from password sharing would result in some loss of viewing hours (2024-04-18). However, the evidence does not provide a clear, current stated policy on password sharing for 2024.
+
+**Claims with citations:**
+  1. [grounded] In 2016, Reed Hastings stated that Netflix had no plans to make any changes to password sharing and considered it something to live with due to legitimate sharing.
+     sources: F-PROSE-nflx-q3-2016-transcript-0047, F-PROSE-nflx-q3-2016-transcript-0048
+  2. [grounded] In 2017, Greg Peters stated that password sharing was not a huge issue and that Netflix was not prioritizing significant measures to stem it.
+     sources: F-PROSE-nflx-q3-2017-transcript-0032, F-PROSE-nflx-q3-2017-transcript-0033
+  3. [grounded] In 2022, Spencer Neumann noted that Netflix was still working through the ultimate solution for account sharing.
+     sources: F-PROSE-nflx-q1-2022-transcript-0026
+  4. [grounded] In 2023, Greg Peters reported that the last country rollouts for password sharing had gone well and were consistent with earlier results in Latin America.
+     sources: F-PROSE-nflx-q1-2023-transcript-0009
+  5. [grounded] In 2024, Netflix acknowledged that cutting off non-paying viewers from password sharing would result in some loss of viewing hours.
+     sources: F-PROSE-nflx-q1-2024-transcript-0091
+  6. [interpretive] The evidence does not provide a clear, current stated policy on password sharing for 2024.
+     sources: (no sources)
+
+**Disclosed gaps:**
+  - slot `S1`: The candidate set provides historical context and some forward guidance on Netflix's approach to password sharing, but it does not provide a clear, current stated policy on password sharing for 2024.
+
+**Disclosed contradictions:**
+  - Past statements indicate that Netflix considered password sharing as something to live with and not a significant issue, while recent statements suggest that Netflix is taking measures to reduce password sharing.  conflicting=[F-PROSE-nflx-q3-2017-transcript-0033, F-PROSE-nflx-q3-2016-transcript-0048, F-PROSE-nflx-q3-2017-transcript-0032, F-PROSE-nflx-q3-2016-transcript-0047, F-PROSE-nflx-q1-2024-transcript-0091]
+
+## Output Governance
+────────────────────────────────────────────────────────────────────────────
+- [PASS] no governance violations
+
+## Run Summary
+────────────────────────────────────────────────────────────────────────────
+- Elapsed: 87.92s
+- Total iterations (verifier + refutation loop): 3
+- Models used: ['deepseek/deepseek-chat-v3', 'meta-llama/llama-3.3-70b-instruct', 'qwen/qwen-2.5-72b-instruct']

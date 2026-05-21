@@ -1,0 +1,327 @@
+{
+  "run_id": "run-c6344808",
+  "query": {
+    "original_query": "Why did Netflix's free cash flow turn positive in 2022?",
+    "complexity_tier": "simple",
+    "validation_status": "passed"
+  },
+  "decomposition_plan": {
+    "query_id": "q_085b19f77c",
+    "original_query": "Why did Netflix's free cash flow turn positive in 2022?",
+    "complexity_tier": "simple",
+    "synthesis_strategy": "integrate",
+    "slots": [
+      {
+        "slot_id": "S1",
+        "sub_question": "What factors contributed to Netflix's free cash flow turning positive in 2022?",
+        "evidence_type": "causal_explanation",
+        "target_layer": "both",
+        "period_filter": null,
+        "key_terms": [
+          "Netflix free cash flow improvement 2022",
+          "cash flow generation drivers",
+          "2022 operating cash flow"
+        ],
+        "coverage_threshold": 0.8
+      }
+    ]
+  },
+  "retrieval_passes": [
+    {
+      "retrieval_id": "R1_S1_iter1",
+      "slot_id": "S1",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "What factors contributed to Netflix's free cash flow turning positive in 2022?",
+      "bm25_terms": [
+        "Netflix free cash flow improvement 2022",
+        "cash flow generation drivers",
+        "2022 operating cash flow"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2021-transcript-0077",
+          "source": "fact",
+          "rrf_score": 0.032522,
+          "vector_score": 0.876791,
+          "bm25_score": 42.662397
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2021-letter-0058",
+          "source": "fact",
+          "rrf_score": 0.031545,
+          "vector_score": 0.897425,
+          "bm25_score": 38.081026
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2019-transcript-0042",
+          "source": "fact",
+          "rrf_score": 0.03031,
+          "vector_score": 0.845925,
+          "bm25_score": 38.354758
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0101",
+          "source": "fact",
+          "rrf_score": 0.028571,
+          "vector_score": 0.84395,
+          "bm25_score": 35.359874
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2018-letter-0046",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 42.31399
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2023-transcript-0055",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.866086,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-transcript-0082",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 39.207881
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2022-transcript-0080",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.856321,
+          "bm25_score": null
+        }
+      ],
+      "memory_exclusions": []
+    },
+    {
+      "retrieval_id": "R1_S1_iter2",
+      "slot_id": "S1",
+      "iteration": 2,
+      "pass_origin": "verifier_loop",
+      "vector_query": "What factors contributed to Netflix's free cash flow turning positive in 2022? | Gap from prior pass: The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.",
+      "bm25_terms": [
+        "Netflix free cash flow improvement 2022",
+        "cash flow generation drivers",
+        "2022 operating cash flow"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0099",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.760735,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2019-letter-0040",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": null,
+          "bm25_score": 38.354758
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2016-q2-0116",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.759726,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2020-q1-0053",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 36.540346
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2017-q1-0092",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.759726,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2020-q2-0184",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 36.540346
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2017-q2-0108",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.759726,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-10q-2020-q3-0054",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 36.540346
+        }
+      ],
+      "memory_exclusions": [
+        "F-PROSE-nflx-q1-2022-transcript-0080",
+        "F-PROSE-nflx-q1-2023-transcript-0101",
+        "F-PROSE-nflx-q2-2022-transcript-0082",
+        "F-PROSE-nflx-q2-2023-transcript-0055",
+        "F-PROSE-nflx-q4-2018-letter-0046",
+        "F-PROSE-nflx-q4-2019-transcript-0042",
+        "F-PROSE-nflx-q4-2021-letter-0058",
+        "F-PROSE-nflx-q4-2021-transcript-0077"
+      ]
+    }
+  ],
+  "verifier_verdicts": [
+    {
+      "slot_id": "S1",
+      "coverage_score": 0.5,
+      "verdict": "gap",
+      "gap_description": "The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.",
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q4-2021-transcript-0077",
+        "F-PROSE-nflx-q4-2021-letter-0058",
+        "F-PROSE-nflx-q4-2018-letter-0046",
+        "F-PROSE-nflx-q1-2022-transcript-0080"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q4-2019-transcript-0042",
+        "F-PROSE-nflx-q1-2023-transcript-0101",
+        "F-PROSE-nflx-q2-2023-transcript-0055",
+        "F-PROSE-nflx-q2-2022-transcript-0082"
+      ]
+    },
+    {
+      "slot_id": "S1",
+      "coverage_score": 0.2,
+      "verdict": "gap",
+      "gap_description": "The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022.",
+      "contradiction_details": [],
+      "supported_candidates": [],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q1-2023-transcript-0099",
+        "F-PROSE-nflx-q4-2019-letter-0040",
+        "F-PROSE-nflx-10q-2016-q2-0116",
+        "F-PROSE-nflx-10q-2020-q1-0053",
+        "F-PROSE-nflx-10q-2017-q1-0092",
+        "F-PROSE-nflx-10q-2020-q2-0184",
+        "F-PROSE-nflx-10q-2017-q2-0108",
+        "F-PROSE-nflx-10q-2020-q3-0054"
+      ]
+    }
+  ],
+  "refutation_report": null,
+  "coverage_progression": [
+    {
+      "slot_id": "S1",
+      "iteration": 1,
+      "coverage_score": 0.5
+    },
+    {
+      "slot_id": "S1",
+      "iteration": 2,
+      "coverage_score": 0.2
+    }
+  ],
+  "refutation_loop_iterations": [],
+  "final_slot_states": [
+    {
+      "slot_id": "S1",
+      "terminal_verdict": "exhausted",
+      "final_coverage": 0.2
+    }
+  ],
+  "answer": {
+    "answer_text": "I can't answer this question from the Netflix corpus available to me \u2014 no verified evidence was found across the planned retrieval slots. Narrow the question to a specific metric, period, or filing so I can ground the answer in primary sources.",
+    "claims": [],
+    "disclosed_gaps": [
+      {
+        "slot_id": "S1",
+        "gap_description": "The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022."
+      }
+    ],
+    "disclosed_contradictions": [],
+    "disclosed_refutations": [],
+    "adversarially_probed": false,
+    "degradation_level": 2
+  },
+  "governance_violations": [],
+  "degradation_level": 2,
+  "degradation_cause": "slot_exhaustion",
+  "total_tokens_consumed": 0,
+  "total_iterations": 2,
+  "elapsed_seconds": 34.006,
+  "models_used": [
+    "meta-llama/llama-3.3-70b-instruct",
+    "qwen/qwen-2.5-72b-instruct"
+  ],
+  "extra": {
+    "ledger": {
+      "run_id": "run-c6344808",
+      "retrieved_ids": {
+        "S1": [
+          "F-PROSE-nflx-q4-2021-transcript-0077",
+          "F-PROSE-nflx-q4-2021-letter-0058",
+          "F-PROSE-nflx-q4-2019-transcript-0042",
+          "F-PROSE-nflx-q1-2023-transcript-0101",
+          "F-PROSE-nflx-q4-2018-letter-0046",
+          "F-PROSE-nflx-q2-2023-transcript-0055",
+          "F-PROSE-nflx-q2-2022-transcript-0082",
+          "F-PROSE-nflx-q1-2022-transcript-0080",
+          "F-PROSE-nflx-q1-2023-transcript-0099",
+          "F-PROSE-nflx-q4-2019-letter-0040",
+          "F-PROSE-nflx-10q-2016-q2-0116",
+          "F-PROSE-nflx-10q-2020-q1-0053",
+          "F-PROSE-nflx-10q-2017-q1-0092",
+          "F-PROSE-nflx-10q-2020-q2-0184",
+          "F-PROSE-nflx-10q-2017-q2-0108",
+          "F-PROSE-nflx-10q-2020-q3-0054"
+        ]
+      },
+      "exhausted_queries": [],
+      "coverage_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "coverage_score": 0.5
+        },
+        {
+          "slot_id": "S1",
+          "iteration": 2,
+          "coverage_score": 0.2
+        }
+      ],
+      "gap_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "gap_description": "The candidate set provides forward guidance and general statements about Netflix's free cash flow becoming positive, but does not provide specific factors that contributed to the improvement in 2022."
+        }
+      ],
+      "refutation_hypotheses_tested": [],
+      "refutation_loop_history": [],
+      "supported_candidates": {
+        "S1": [
+          "F-PROSE-nflx-q4-2021-transcript-0077",
+          "F-PROSE-nflx-q4-2021-letter-0058",
+          "F-PROSE-nflx-q4-2018-letter-0046",
+          "F-PROSE-nflx-q1-2022-transcript-0080"
+        ]
+      },
+      "session_scope": "session"
+    },
+    "warnings": [],
+    "adversarially_probed": false,
+    "refutation_bypass_reason": "degradation=CLARIFICATION_REQUEST \u2014 refutation bypassed"
+  }
+}

@@ -1,0 +1,661 @@
+{
+  "run_id": "run-ee7b318c",
+  "query": {
+    "original_query": "Has Netflix's stance on advertising changed?",
+    "complexity_tier": "simple",
+    "validation_status": "passed"
+  },
+  "decomposition_plan": {
+    "query_id": "q_43d891f97d",
+    "original_query": "Has Netflix's stance on advertising changed?",
+    "complexity_tier": "simple",
+    "synthesis_strategy": "integrate",
+    "slots": [
+      {
+        "slot_id": "S1",
+        "sub_question": "Has Netflix ever stated it would not have ads?",
+        "evidence_type": "strategic_position",
+        "target_layer": "both",
+        "period_filter": null,
+        "key_terms": [
+          "Netflix no ads policy",
+          "ad-free experience commitment"
+        ],
+        "coverage_threshold": 0.8
+      },
+      {
+        "slot_id": "S2",
+        "sub_question": "Has Netflix introduced or announced an ad-supported tier?",
+        "evidence_type": "strategic_position",
+        "target_layer": "both",
+        "period_filter": null,
+        "key_terms": [
+          "Netflix ad-supported tier",
+          "Basic with Ads launch",
+          "advertising strategy shift"
+        ],
+        "coverage_threshold": 0.8
+      }
+    ]
+  },
+  "retrieval_passes": [
+    {
+      "retrieval_id": "R1_S1_iter1",
+      "slot_id": "S1",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "Has Netflix ever stated it would not have ads?",
+      "bm25_terms": [
+        "Netflix no ads policy",
+        "ad-free experience commitment"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.83282,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2026-transcript-0085",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": null,
+          "bm25_score": 15.800749
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2017-transcript-0070",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.811546,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2023-transcript-0037",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 15.515492
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2023-transcript-0066",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.806743,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2022-transcript-0095",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 14.907167
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2017-transcript-0097",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.782903,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2024-transcript-0074",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 14.309309
+        }
+      ],
+      "memory_exclusions": []
+    },
+    {
+      "retrieval_id": "R1_S2_iter1",
+      "slot_id": "S2",
+      "iteration": 1,
+      "pass_origin": "verifier_loop",
+      "vector_query": "Has Netflix introduced or announced an ad-supported tier?",
+      "bm25_terms": [
+        "Netflix ad-supported tier",
+        "Basic with Ads launch",
+        "advertising strategy shift"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-letter-0060",
+          "source": "fact",
+          "rrf_score": 0.032522,
+          "vector_score": 0.812711,
+          "bm25_score": 22.39249
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2022-transcript-0001",
+          "source": "fact",
+          "rrf_score": 0.031498,
+          "vector_score": 0.801206,
+          "bm25_score": 18.430664
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2024-transcript-0030",
+          "source": "fact",
+          "rrf_score": 0.029911,
+          "vector_score": 0.781215,
+          "bm25_score": 17.04571
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0057",
+          "source": "fact",
+          "rrf_score": 0.029857,
+          "vector_score": 0.783044,
+          "bm25_score": 16.626286
+        },
+        {
+          "candidate_id": "nflx-q1-2023-letter__letter_body__chunk_7",
+          "source": "chunk",
+          "rrf_score": 0.027973,
+          "vector_score": 0.767952,
+          "bm25_score": 28.762138
+        },
+        {
+          "candidate_id": "nflx-q2-2024-letter__letter_body__chunk_8",
+          "source": "chunk",
+          "rrf_score": 0.027072,
+          "vector_score": 0.784392,
+          "bm25_score": 22.898141
+        },
+        {
+          "candidate_id": "nflx-q2-2022-transcript__qa__chunk_5",
+          "source": "chunk",
+          "rrf_score": 0.026172,
+          "vector_score": 0.748158,
+          "bm25_score": 22.368068
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2023-transcript-0095",
+          "source": "fact",
+          "rrf_score": 0.016393,
+          "vector_score": 0.82324,
+          "bm25_score": null
+        }
+      ],
+      "memory_exclusions": []
+    },
+    {
+      "retrieval_id": "REF_h_1_iter1",
+      "slot_id": "refutation::h_1",
+      "iteration": 1,
+      "pass_origin": "refutation_probe",
+      "vector_query": "Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.",
+      "bm25_terms": [
+        "Netflix's",
+        "shareholder",
+        "announced",
+        "ad-supported",
+        "tier",
+        "reversing",
+        "no-ads",
+        "position"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-letter-0060",
+          "source": "fact",
+          "rrf_score": 0.032787,
+          "vector_score": 0.824266,
+          "bm25_score": 13.807262
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2022-transcript-0001",
+          "source": "fact",
+          "rrf_score": 0.03009,
+          "vector_score": 0.77349,
+          "bm25_score": 11.778114
+        },
+        {
+          "candidate_id": "nflx-q4-2022-letter__letter_body__chunk_15",
+          "source": "chunk",
+          "rrf_score": 0.026389,
+          "vector_score": 0.737712,
+          "bm25_score": 16.465217
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0057",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": 0.817493,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0052",
+          "source": "fact",
+          "rrf_score": 0.016129,
+          "vector_score": null,
+          "bm25_score": 13.660811
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2024-letter-0005",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.802837,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-letter-0061",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": null,
+          "bm25_score": 12.287474
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2023-transcript-0095",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.795505,
+          "bm25_score": null
+        }
+      ],
+      "memory_exclusions": [
+        "F-PROSE-nflx-q1-2018-transcript-0096"
+      ]
+    },
+    {
+      "retrieval_id": "R1_refutation_loop::h_1::iter1_iter1",
+      "slot_id": "refutation_loop::h_1::iter1",
+      "iteration": 1,
+      "pass_origin": "refutation_loop",
+      "vector_query": "Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.",
+      "bm25_terms": [
+        "netflix",
+        "targeting",
+        "launch",
+        "announced",
+        "details",
+        "building",
+        "tier"
+      ],
+      "period_filter": null,
+      "candidates": [
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-letter-0060",
+          "source": "fact",
+          "rrf_score": 0.032522,
+          "vector_score": 0.824266,
+          "bm25_score": 22.413961
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q1-2024-transcript-0057",
+          "source": "fact",
+          "rrf_score": 0.032002,
+          "vector_score": 0.817493,
+          "bm25_score": 15.237651
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q3-2022-transcript-0001",
+          "source": "fact",
+          "rrf_score": 0.031099,
+          "vector_score": 0.77349,
+          "bm25_score": 22.739501
+        },
+        {
+          "candidate_id": "nflx-q2-2024-letter__letter_body__chunk_0",
+          "source": "chunk",
+          "rrf_score": 0.027242,
+          "vector_score": 0.793098,
+          "bm25_score": 13.109263
+        },
+        {
+          "candidate_id": "nflx-q2-2024-letter__letter_body__chunk_8",
+          "source": "chunk",
+          "rrf_score": 0.026857,
+          "vector_score": 0.761844,
+          "bm25_score": 14.853554
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2024-letter-0005",
+          "source": "fact",
+          "rrf_score": 0.015873,
+          "vector_score": 0.802837,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q4-2023-transcript-0095",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": 0.795505,
+          "bm25_score": null
+        },
+        {
+          "candidate_id": "F-PROSE-nflx-q2-2022-letter-0056",
+          "source": "fact",
+          "rrf_score": 0.015625,
+          "vector_score": null,
+          "bm25_score": 14.078889
+        }
+      ],
+      "memory_exclusions": []
+    }
+  ],
+  "verifier_verdicts": [
+    {
+      "slot_id": "S1",
+      "coverage_score": 0.8,
+      "verdict": "covered",
+      "gap_description": null,
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q1-2018-transcript-0096",
+        "F-PROSE-nflx-q4-2017-transcript-0070",
+        "F-PROSE-nflx-q3-2017-transcript-0097"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q1-2026-transcript-0085",
+        "F-PROSE-nflx-q2-2023-transcript-0037",
+        "F-PROSE-nflx-q1-2023-transcript-0066",
+        "F-PROSE-nflx-q4-2022-transcript-0095",
+        "F-PROSE-nflx-q4-2024-transcript-0074"
+      ]
+    },
+    {
+      "slot_id": "S2",
+      "coverage_score": 0.95,
+      "verdict": "covered",
+      "gap_description": null,
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q2-2022-letter-0060",
+        "F-PROSE-nflx-q3-2022-transcript-0001",
+        "F-PROSE-nflx-q1-2024-transcript-0057",
+        "nflx-q1-2023-letter__letter_body__chunk_7",
+        "nflx-q2-2024-letter__letter_body__chunk_8",
+        "F-PROSE-nflx-q4-2023-transcript-0095"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q2-2024-transcript-0030"
+      ]
+    },
+    {
+      "slot_id": "refutation_loop::h_1::iter1",
+      "coverage_score": 0.8,
+      "verdict": "covered",
+      "gap_description": null,
+      "contradiction_details": [],
+      "supported_candidates": [
+        "F-PROSE-nflx-q2-2022-letter-0060",
+        "F-PROSE-nflx-q3-2022-transcript-0001"
+      ],
+      "rejected_candidates": [
+        "F-PROSE-nflx-q1-2024-transcript-0057",
+        "nflx-q2-2024-letter__letter_body__chunk_0",
+        "nflx-q2-2024-letter__letter_body__chunk_8",
+        "F-PROSE-nflx-q2-2024-letter-0005",
+        "F-PROSE-nflx-q4-2023-transcript-0095",
+        "F-PROSE-nflx-q2-2022-letter-0056"
+      ]
+    }
+  ],
+  "refutation_report": {
+    "run_id": "run-ee7b318c",
+    "model_used": "mistralai/mistral-large-2411",
+    "hypotheses": [
+      {
+        "hypothesis_id": "h_1",
+        "targets_claim_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+        "hypothesis_text": "Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.",
+        "rationale": "If Netflix introduced an ad-supported tier, it contradicts the earlier strategic claim of not selling advertising.",
+        "strategy": "later_reversal",
+        "retrieval_record_id": "REF_h_1_iter1",
+        "refutation_verdict": "strongly_refuted",
+        "evidence_ids": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "F-PROSE-nflx-q1-2024-transcript-0057"
+        ]
+      }
+    ],
+    "overall_verdict": "refutation_to_loop",
+    "triggered_loop_reentry": true,
+    "loop_reentry_iteration": 1
+  },
+  "coverage_progression": [
+    {
+      "slot_id": "S1",
+      "iteration": 1,
+      "coverage_score": 0.8
+    },
+    {
+      "slot_id": "S2",
+      "iteration": 2,
+      "coverage_score": 0.95
+    },
+    {
+      "slot_id": "refutation_loop::h_1::iter1",
+      "iteration": 3,
+      "coverage_score": 0.8
+    }
+  ],
+  "refutation_loop_iterations": [
+    {
+      "iteration": 1,
+      "triggering_hypothesis_id": "h_1",
+      "targets_claim_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+      "coverage_after": 0.8
+    }
+  ],
+  "final_slot_states": [
+    {
+      "slot_id": "S1",
+      "terminal_verdict": "covered",
+      "final_coverage": 0.8
+    },
+    {
+      "slot_id": "S2",
+      "terminal_verdict": "covered",
+      "final_coverage": 0.95
+    }
+  ],
+  "answer": {
+    "answer_text": "Netflix's stance on advertising has evolved significantly over time. In 2017-2018, Netflix maintained a firm position against advertising. On 2017-10-16, Reed Hastings stated 'our focus is not expanding in new ads at all' (F3). On 2018-01-22, Hastings emphasized that 'not having advertising as an important strategic differentiator for Netflix' (F2). On 2018-04-16, Netflix asserted 'We don't sell advertising' (F1). However, by 2022, Netflix reversed this position. On 2022-07-19, Netflix announced it was 'targeting to launch the ad-supported tier around the early part of 2023' (F4). On 2022-10-18, Greg Peters confirmed details for the new Basic with Ads tier launching in the U.S. and 11 other markets (F5). Since then, Netflix has continued developing its advertising strategy. On 2024-01-23, Peters revealed Netflix considered making the ad tier the default option similar to Amazon (F7). On 2024-04-18, Netflix stated it is 'building its ads tier over time to achieve revenue parity with non-ads offerings' (F6). This evidence shows a clear reversal from Netflix's initial anti-advertising stance to its current focus on building an ad-supported business model.",
+    "claims": [
+      {
+        "claim_text": "In 2017-2018, Netflix maintained a firm position against advertising.",
+        "source_ids": [
+          "F-PROSE-nflx-q3-2017-transcript-0097",
+          "F-PROSE-nflx-q4-2017-transcript-0070",
+          "F-PROSE-nflx-q1-2018-transcript-0096"
+        ],
+        "claim_type": "interpretive"
+      },
+      {
+        "claim_text": "On 2017-10-16, Reed Hastings stated 'our focus is not expanding in new ads at all'.",
+        "source_ids": [
+          "F-PROSE-nflx-q3-2017-transcript-0097"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2018-01-22, Reed Hastings emphasized that 'not having advertising as an important strategic differentiator for Netflix'.",
+        "source_ids": [
+          "F-PROSE-nflx-q4-2017-transcript-0070"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2018-04-16, Netflix asserted 'We don't sell advertising'.",
+        "source_ids": [
+          "F-PROSE-nflx-q1-2018-transcript-0096"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2022-07-19, Netflix announced it was 'targeting to launch the ad-supported tier around the early part of 2023'.",
+        "source_ids": [
+          "F-PROSE-nflx-q2-2022-letter-0060"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2022-10-18, Greg Peters confirmed details for the new Basic with Ads tier launching in the U.S. and 11 other markets.",
+        "source_ids": [
+          "F-PROSE-nflx-q3-2022-transcript-0001"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2024-01-23, Greg Peters revealed Netflix considered making the ad tier the default option similar to Amazon.",
+        "source_ids": [
+          "F-PROSE-nflx-q4-2023-transcript-0095"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "On 2024-04-18, Netflix stated it is 'building its ads tier over time to achieve revenue parity with non-ads offerings'.",
+        "source_ids": [
+          "F-PROSE-nflx-q1-2024-transcript-0057"
+        ],
+        "claim_type": "grounded"
+      },
+      {
+        "claim_text": "Netflix reversed its initial anti-advertising stance to focus on building an ad-supported business model.",
+        "source_ids": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "F-PROSE-nflx-q1-2024-transcript-0057"
+        ],
+        "claim_type": "interpretive"
+      }
+    ],
+    "disclosed_gaps": [],
+    "disclosed_contradictions": [],
+    "disclosed_refutations": [
+      {
+        "targets_claim_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+        "refuting_evidence_ids": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "F-PROSE-nflx-q1-2024-transcript-0057"
+        ],
+        "refutation_verdict": "strongly_refuted",
+        "strategy": "later_reversal"
+      }
+    ],
+    "adversarially_probed": true,
+    "degradation_level": 1
+  },
+  "governance_violations": [],
+  "degradation_level": 1,
+  "degradation_cause": "refutation_unresolved",
+  "total_tokens_consumed": 0,
+  "total_iterations": 3,
+  "elapsed_seconds": 117.153,
+  "models_used": [
+    "deepseek/deepseek-chat-v3",
+    "meta-llama/llama-3.3-70b-instruct",
+    "mistralai/mistral-large-2411",
+    "qwen/qwen-2.5-72b-instruct"
+  ],
+  "extra": {
+    "ledger": {
+      "run_id": "run-ee7b318c",
+      "retrieved_ids": {
+        "S1": [
+          "F-PROSE-nflx-q1-2018-transcript-0096",
+          "F-PROSE-nflx-q1-2026-transcript-0085",
+          "F-PROSE-nflx-q4-2017-transcript-0070",
+          "F-PROSE-nflx-q2-2023-transcript-0037",
+          "F-PROSE-nflx-q1-2023-transcript-0066",
+          "F-PROSE-nflx-q4-2022-transcript-0095",
+          "F-PROSE-nflx-q3-2017-transcript-0097",
+          "F-PROSE-nflx-q4-2024-transcript-0074"
+        ],
+        "S2": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "F-PROSE-nflx-q2-2024-transcript-0030",
+          "F-PROSE-nflx-q1-2024-transcript-0057",
+          "nflx-q1-2023-letter__letter_body__chunk_7",
+          "nflx-q2-2024-letter__letter_body__chunk_8",
+          "nflx-q2-2022-transcript__qa__chunk_5",
+          "F-PROSE-nflx-q4-2023-transcript-0095"
+        ],
+        "refutation_loop::h_1::iter1": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q1-2024-transcript-0057",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "nflx-q2-2024-letter__letter_body__chunk_0",
+          "nflx-q2-2024-letter__letter_body__chunk_8",
+          "F-PROSE-nflx-q2-2024-letter-0005",
+          "F-PROSE-nflx-q4-2023-transcript-0095",
+          "F-PROSE-nflx-q2-2022-letter-0056"
+        ]
+      },
+      "exhausted_queries": [],
+      "coverage_history": [
+        {
+          "slot_id": "S1",
+          "iteration": 1,
+          "coverage_score": 0.8
+        },
+        {
+          "slot_id": "S2",
+          "iteration": 1,
+          "coverage_score": 0.95
+        },
+        {
+          "slot_id": "refutation_loop::h_1::iter1",
+          "iteration": 1,
+          "coverage_score": 0.8
+        }
+      ],
+      "gap_history": [],
+      "refutation_hypotheses_tested": [
+        {
+          "hypothesis_id": "h_1",
+          "targets_claim_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+          "hypothesis_text": "Netflix's Q4 2022 shareholder letter announced an ad-supported tier, reversing its earlier no-ads position.",
+          "rationale": "If Netflix introduced an ad-supported tier, it contradicts the earlier strategic claim of not selling advertising.",
+          "strategy": "later_reversal",
+          "retrieval_record_id": "REF_h_1_iter1",
+          "refutation_verdict": "strongly_refuted",
+          "evidence_ids": [
+            "F-PROSE-nflx-q2-2022-letter-0060",
+            "F-PROSE-nflx-q3-2022-transcript-0001",
+            "F-PROSE-nflx-q1-2024-transcript-0057"
+          ]
+        }
+      ],
+      "refutation_loop_history": [
+        {
+          "iteration": 1,
+          "triggering_hypothesis_id": "h_1",
+          "targets_claim_id": "F-PROSE-nflx-q1-2018-transcript-0096",
+          "coverage_after": 0.8
+        }
+      ],
+      "supported_candidates": {
+        "S1": [
+          "F-PROSE-nflx-q1-2018-transcript-0096",
+          "F-PROSE-nflx-q4-2017-transcript-0070",
+          "F-PROSE-nflx-q3-2017-transcript-0097"
+        ],
+        "S2": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001",
+          "F-PROSE-nflx-q1-2024-transcript-0057",
+          "nflx-q1-2023-letter__letter_body__chunk_7",
+          "nflx-q2-2024-letter__letter_body__chunk_8",
+          "F-PROSE-nflx-q4-2023-transcript-0095"
+        ],
+        "refutation_loop::h_1::iter1": [
+          "F-PROSE-nflx-q2-2022-letter-0060",
+          "F-PROSE-nflx-q3-2022-transcript-0001"
+        ]
+      },
+      "session_scope": "session"
+    },
+    "warnings": [],
+    "adversarially_probed": true
+  }
+}
