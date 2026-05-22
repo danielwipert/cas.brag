@@ -44,7 +44,7 @@
 
   /* --- type families -------------------------------------- */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-body:    'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-ui:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
