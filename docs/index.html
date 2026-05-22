@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FAF8F4">
 <title>BRAG &mdash; Boosted Retrieval&#8209;Augmented Generation</title>
-<meta name="description" content="BRAG is a cybernetic RAG system over ten years of Netflix's public financial reporting. Every confident answer is gated by a Verifier and a Refutation Agent whose job is to disagree with the evidence.">
+<meta name="description" content="BRAG is a cybernetic RAG system. Every confident answer is gated by two LLM agents whose job is to disagree with the evidence &mdash; a Verifier and a Refutation Agent. Tested on ten years of Netflix's public financial reporting.">
 <meta property="og:title" content="BRAG &mdash; Boosted Retrieval-Augmented Generation">
 <meta property="og:description" content="A RAG system that knows when to disagree with its own evidence.">
 <meta property="og:type" content="website">
@@ -48,14 +48,15 @@
   </div>
   <div class="display">
     <h1 class="hero-text">
-      Ask a normal RAG system whether Netflix ever said it had &ldquo;no plans to add ads.&rdquo;
-      <span class="signal">Netflix launched ads in 2022.</span>
+      A normal RAG system retrieves what looks similar to your question &mdash; and trusts what it pulls.
+      <span class="signal">Nothing in that pipeline is a skeptic.</span>
     </h1>
     <div class="lead-block">
       <p class="lead">
-        BRAG is a cybernetic RAG system over ten years of Netflix&rsquo;s public financial reporting.
-        Every confident answer it gives is gated by two LLM agents whose job is to disagree with the evidence
-        &mdash; a Verifier and a Refutation Agent. If they can&rsquo;t, the answer changes.
+        BRAG is a cybernetic retrieval&#8209;augmented generation system. Every confident answer it
+        gives is gated by two LLM agents whose job is to disagree with the evidence &mdash;
+        a Verifier and a Refutation Agent. If they can&rsquo;t refute the answer, it stands.
+        If they can, it changes, downgrades, or discloses the disagreement.
       </p>
     </div>
   </div>
@@ -76,41 +77,46 @@
       hands them to an LLM, and asks it to write an answer. Whatever it pulls, it trusts.
     </p>
     <p>
-      That works for documentation. It breaks for financial reporting &mdash;
-      because the same company says contradictory things across years,
-      restates numbers between filings, and reverses strategic positions.
-      The &ldquo;most similar chunk&rdquo; is often the misleading one.
+      That works for a static product manual. It breaks the moment your corpus contains
+      anything that changes over time, contradicts itself, or could be misread by a
+      paraphraser. Four failure modes appear over and over.
     </p>
   </div>
   <div class="display">
     <div class="problem-stack">
       <div class="problem-row">
-        <h4>Restated values</h4>
+        <h4>Stale facts</h4>
         <p>
-          Q3 numbers reported in Q3 often differ from Q3 numbers as restated in Q4
-          or the annual report. Cosine similarity can&rsquo;t tell which one is current.
+          A number gets restated. A definition gets revised. The old version stays in
+          the corpus alongside the new one. Both look relevant to the same question.
+          Cosine similarity can&rsquo;t tell which one is current &mdash; so the system might
+          confidently quote either.
         </p>
       </div>
       <div class="problem-row">
-        <h4>Guidance vs. actual</h4>
+        <h4>Contradictions inside the corpus</h4>
         <p>
-          &ldquo;We expect&hairsp;$X&rdquo; in Q1 and &ldquo;We achieved&hairsp;$Y&rdquo; in Q4 are different
-          <em>kinds</em> of statements, but they look similar to an embedding model.
+          Two passages disagree on the same fact. RAG returns whichever one scored
+          higher and writes an answer from it. The other passage &mdash; the one that
+          would have flipped the answer &mdash; is invisible to the reader and to the model.
         </p>
       </div>
       <div class="problem-row">
-        <h4>Strategic reversals</h4>
+        <h4>Reversed positions</h4>
         <p>
-          &ldquo;We have no plans to add ads&rdquo; (2017) was overturned by &ldquo;We&rsquo;re launching
-          an ad&#8209;supported tier&rdquo; (2022). Both are in the corpus. Both look relevant.
+          An organization said X. Later, it said not&#8209;X. Both statements are in the
+          corpus, both look on&#8209;topic, and the most&#8209;similar chunk is usually the
+          earlier one (it&rsquo;s often more explicit). The system answers as if the
+          reversal never happened.
         </p>
       </div>
       <div class="problem-row">
         <h4>Hallucinated numbers</h4>
         <p>
-          When an LLM reads &ldquo;$8.5 billion&rdquo; out of prose, you have no guarantee it
-          didn&rsquo;t paraphrase it from &ldquo;approximately&hairsp;$8.5B&rdquo; &mdash; or invent it
-          from a similar&#8209;looking line.
+          When an LLM reads a figure out of prose, you have no guarantee it didn&rsquo;t
+          paraphrase it from a softened version nearby &mdash; or invent it from a
+          similar&#8209;looking line. RAG provides no separate channel for numerical
+          values, so the model can launder a guess as a citation.
         </p>
       </div>
     </div>
@@ -374,9 +380,10 @@
   <div class="argument">
     <h2 class="h3">Same question. Same corpus. Two systems.</h2>
     <p>
-      Watch what happens when both pipelines are asked the question from the hero.
-      The Normal RAG column is a plausible reconstruction; the BRAG column is verbatim
-      from the actual D2 trace.
+      We tested BRAG on ten years of Netflix&rsquo;s public financial reporting &mdash; a corpus
+      chosen because the four failure modes above appear in it constantly. Here&rsquo;s one
+      query, run through both pipelines. The Normal RAG column is a plausible reconstruction;
+      the BRAG column is verbatim from the actual D2 trace.
     </p>
   </div>
   <div class="full compare-wrap">
