@@ -1,0 +1,103 @@
+/* ============================================================
+   BRAG — design tokens
+   Shared between the landing page and the D1–D6 trace pages.
+   See planning/design/design_brief.md for the full system.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/fraunces-var-latin.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/inter-var-latin.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../fonts/jetbrains-mono-var-latin.woff2') format('woff2-variations');
+}
+
+:root {
+  /* --- color ----------------------------------------------- */
+  --ink:           #0E0E10;
+  --ink-soft:      #3A3A3D;
+  --ink-mute:      #6E6E72;
+  --paper:         #FAF8F4;
+  --paper-raised:  #FFFFFF;
+  --rule:          #D9D6D0;
+  --rule-strong:   #8C8983;
+  --signal:        #C8102E;
+  --verify:        #1F6E3D;
+  --warn:          #B8651A;
+  --halt:          #5B1D1D;
+
+  /* --- type families -------------------------------------- */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body:    'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-ui:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* --- fluid type scale (desktop ratio 1.333) -------------- */
+  --fs-eyebrow:  clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
+  --fs-caption:  clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
+  --fs-body:     clamp(1rem,      0.94rem + 0.25vw, 1.1875rem);
+  --fs-lead:     clamp(1.1875rem, 1.0rem + 0.85vw,  1.625rem);
+  --fs-h6:       clamp(0.95rem,   0.90rem + 0.20vw, 1.05rem);
+  --fs-h5:       clamp(1.1875rem, 1.05rem + 0.6vw,  1.5rem);
+  --fs-h4:       clamp(1.4375rem, 1.20rem + 1.1vw,  2.125rem);
+  --fs-h3:       clamp(1.75rem,   1.40rem + 1.7vw,  2.75rem);
+  --fs-h2:       clamp(2.1875rem, 1.65rem + 2.6vw,  3.75rem);
+  --fs-h1:       clamp(2.75rem,   1.95rem + 4.0vw,  5.5rem);
+  --fs-hero:     clamp(3.25rem,   2.05rem + 6.0vw,  7.5rem);
+
+  /* --- spacing (8px baseline) ----------------------------- */
+  --space-1:  8px;
+  --space-2:  16px;
+  --space-3:  24px;
+  --space-4:  32px;
+  --space-5:  48px;
+  --space-6:  64px;
+  --space-7:  96px;
+  --space-8:  128px;
+  --space-9:  192px;
+
+  --space-section: clamp(64px, 8vw, 128px);
+  --space-section-tight: clamp(48px, 6vw, 96px);
+
+  /* --- grid ----------------------------------------------- */
+  --grid-max:     1440px;
+  --grid-gap:     24px;
+  --grid-margin:  clamp(20px, 5vw, 88px);
+
+  /* --- motion --------------------------------------------- */
+  --ease-out:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast:     150ms;
+  --dur:          220ms;
+  --dur-slow:     360ms;
+
+  /* --- layout helpers ------------------------------------- */
+  --measure:      62ch;
+  --measure-wide: 78ch;
+  --hairline:     1px solid var(--rule);
+  --hairline-strong: 1px solid var(--rule-strong);
+  --hairline-ink: 1px solid var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur:      0ms;
+    --dur-slow: 0ms;
+  }
+}

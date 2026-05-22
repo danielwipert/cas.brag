@@ -8,6 +8,17 @@ The corpus is structured to make this behavior legible. Forward guidance vs. rea
 
 ---
 
+## Showcase site
+
+The full case study — Normal RAG vs BRAG, an editorial walk through each pipeline stage, a side-by-side interactive comparison on a real query, and the six trace gallery — lives at [`docs/index.html`](docs/index.html). Once GitHub Pages is enabled for this repo (`Settings → Pages → Source: main / docs`), it's served at `https://danielwipert.github.io/cas.brag/`.
+
+To preview locally:
+
+```bash
+python -m http.server 8765 -d docs
+# open http://127.0.0.1:8765/
+```
+
 ## Live demo
 
 Six curated queries run end-to-end through the full Validate → Plan → Verify → Refute → Generate → Govern pipeline. The outputs below are the artifacts of an actual run (6/6 queries pass acceptance, 23/23 checks).
@@ -25,7 +36,7 @@ Open the per-query trace HTML to see retrieved evidence, Verifier output, Refuta
 
 The [`docs/demo/index.html`](docs/demo/index.html) page links to all six.
 
-> GitHub renders `.html` as source. To view the demos rendered, either clone the repo and open the files locally, or paste a file URL into [htmlpreview.github.io](https://htmlpreview.github.io/).
+> GitHub renders `.html` as source. To view the demos rendered, either use the hosted showcase site above, clone the repo and open the files locally, or paste a file URL into [htmlpreview.github.io](https://htmlpreview.github.io/).
 
 ---
 

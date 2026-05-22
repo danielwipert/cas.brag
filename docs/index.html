@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF8F4">
+<title>BRAG &mdash; Boosted Retrieval&#8209;Augmented Generation</title>
+<meta name="description" content="BRAG is a cybernetic RAG system over ten years of Netflix's public financial reporting. Every confident answer is gated by a Verifier and a Refutation Agent whose job is to disagree with the evidence.">
+<meta property="og:title" content="BRAG &mdash; Boosted Retrieval-Augmented Generation">
+<meta property="og:description" content="A RAG system that knows when to disagree with its own evidence.">
+<meta property="og:type" content="website">
+<link rel="preload" href="assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ============================================================
+     01. HEADER
+     ============================================================ -->
+<header class="site-header section section--tight" style="padding-block: 0;">
+  <div class="full" style="padding-block: var(--space-3);">
+    <a href="#main" class="wordmark">BRAG<sub>Boosted RAG</sub></a>
+    <nav class="nav" aria-label="Page sections">
+      <a href="#diagnosis">The diagnosis</a>
+      <a href="#pipeline">The pipeline</a>
+      <a href="#proof">The proof</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#colophon">Colophon</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================
+     02. HERO &mdash; the wrong answer
+     ============================================================ -->
+<section class="section hero section--flush-top" id="hero">
+  <div class="sidebar">
+    <span class="section-num">02</span>
+    <span class="eyebrow">The problem</span>
+  </div>
+  <div class="display">
+    <h1 class="hero-text">
+      Ask a normal RAG system whether Netflix ever said it had &ldquo;no plans to add ads.&rdquo;
+      <span class="signal">Netflix launched ads in 2022.</span>
+    </h1>
+    <div class="lead-block">
+      <p class="lead">
+        BRAG is a cybernetic RAG system over ten years of Netflix&rsquo;s public financial reporting.
+        Every confident answer it gives is gated by two LLM agents whose job is to disagree with the evidence
+        &mdash; a Verifier and a Refutation Agent. If they can&rsquo;t, the answer changes.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     03. DIAGNOSIS &mdash; how normal RAG works, where it fails
+     ============================================================ -->
+<section class="section" id="diagnosis">
+  <div class="sidebar">
+    <span class="section-num">03</span>
+    <span class="eyebrow">How RAG normally works</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">A textbook RAG has two steps: retrieve, then generate.</h2>
+    <p>
+      The system embeds your question, finds the most&#8209;similar passages in its corpus,
+      hands them to an LLM, and asks it to write an answer. Whatever it pulls, it trusts.
+    </p>
+    <p>
+      That works for documentation. It breaks for financial reporting &mdash;
+      because the same company says contradictory things across years,
+      restates numbers between filings, and reverses strategic positions.
+      The &ldquo;most similar chunk&rdquo; is often the misleading one.
+    </p>
+  </div>
+  <div class="display">
+    <div class="problem-stack">
+      <div class="problem-row">
+        <h4>Restated values</h4>
+        <p>
+          Q3 numbers reported in Q3 often differ from Q3 numbers as restated in Q4
+          or the annual report. Cosine similarity can&rsquo;t tell which one is current.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>Guidance vs. actual</h4>
+        <p>
+          &ldquo;We expect&hairsp;$X&rdquo; in Q1 and &ldquo;We achieved&hairsp;$Y&rdquo; in Q4 are different
+          <em>kinds</em> of statements, but they look similar to an embedding model.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>Strategic reversals</h4>
+        <p>
+          &ldquo;We have no plans to add ads&rdquo; (2017) was overturned by &ldquo;We&rsquo;re launching
+          an ad&#8209;supported tier&rdquo; (2022). Both are in the corpus. Both look relevant.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>Hallucinated numbers</h4>
+        <p>
+          When an LLM reads &ldquo;$8.5 billion&rdquo; out of prose, you have no guarantee it
+          didn&rsquo;t paraphrase it from &ldquo;approximately&hairsp;$8.5B&rdquo; &mdash; or invent it
+          from a similar&#8209;looking line.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     04. THE RULE &mdash; one-sentence section
+     ============================================================ -->
+<section class="section rule-statement" id="rule">
+  <div class="sidebar">
+    <span class="section-num">04</span>
+    <span class="eyebrow">The rule</span>
+  </div>
+  <div class="display">
+    <h2 class="h1">
+      Never let the LLM be the only thing between the question and the answer.
+    </h2>
+    <p class="coda">
+      BRAG enforces this with a pipeline of typed, auditable decisions. The LLM writes prose.
+      It doesn&rsquo;t invent numbers, doesn&rsquo;t skip skeptics, doesn&rsquo;t answer questions it shouldn&rsquo;t have taken.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     05. PIPELINE &mdash; six stages, editorial walk
+     ============================================================ -->
+<section class="section" id="pipeline">
+  <div class="sidebar">
+    <span class="section-num">05</span>
+    <span class="eyebrow">The pipeline</span>
+  </div>
+  <div class="argument stage-intro">
+    <h2 class="h3">Six stages between your question and the answer.</h2>
+    <p>
+      Every one of them can refuse, downgrade, or disclose a disagreement. The LLM is only
+      allowed to write prose &mdash; never to invent numbers, never to skip a step.
+    </p>
+  </div>
+
+  <!-- 05.1 Input Validation -->
+  <article class="stage" id="stage-validate">
+    <div class="sidebar">
+      <span class="section-num small">05.1</span>
+      <span class="eyebrow">Input validation</span>
+    </div>
+    <div class="argument">
+      <h3>First, decide if we should answer at all.</h3>
+      <p>
+        Before any retrieval runs, BRAG checks whether the question is in scope. Asked
+        about Disney&rsquo;s subscribers, it doesn&rsquo;t guess from Netflix data &mdash; it
+        <strong>Hard Halts</strong>. Normal RAG retrieves something for every question, because
+        cosine similarity always returns a top result.
+      </p>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D6 &mdash; out-of-scope query</span><span class="k">query   </span> <span class="s">&quot;What&rsquo;s Disney&rsquo;s streaming subscriber count?&quot;</span>
+<span class="k">decision</span> <span class="w">HARD_HALT</span>
+<span class="k">cause   </span> <span class="s">input_failure</span>
+<span class="k">reason  </span> <span class="s">out_of_scope &mdash; corpus is Netflix only</span>
+<span class="k">elapsed </span> <span class="n">0.0s</span></pre>
+    </div>
+  </article>
+
+  <!-- 05.2 Planner -->
+  <article class="stage" id="stage-plan">
+    <div class="sidebar">
+      <span class="section-num small">05.2</span>
+      <span class="eyebrow">Planner</span>
+      <span class="stage-model">Llama&nbsp;3.3 70B</span>
+    </div>
+    <div class="argument">
+      <h3>Break the question into pieces.</h3>
+      <p>
+        The Planner emits a <span class="mono">DecompositionPlan</span> &mdash; a list of evidence slots,
+        each tagged with what <em>kind</em> of evidence it needs (a number? a strategic claim?
+        a forward&#8209;looking statement?) and what time window to look in.
+        Retrieval runs against those structured slots, not against raw question similarity.
+      </p>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D2 &mdash; decomposition for &ldquo;did Netflix ever say no ads?&rdquo;</span>{
+  <span class="k">&quot;query_id&quot;</span>: <span class="s">&quot;q_8eb01ef3a9&quot;</span>,
+  <span class="k">&quot;complexity_tier&quot;</span>: <span class="s">&quot;simple&quot;</span>,
+  <span class="k">&quot;synthesis_strategy&quot;</span>: <span class="s">&quot;integrate&quot;</span>,
+  <span class="k">&quot;slots&quot;</span>: [
+    {
+      <span class="k">&quot;slot_id&quot;</span>: <span class="s">&quot;S1&quot;</span>,
+      <span class="k">&quot;sub_question&quot;</span>: <span class="s">&quot;Did Netflix ever state it had no plans to add ads?&quot;</span>,
+      <span class="k">&quot;evidence_type&quot;</span>: <span class="v">&quot;strategic_position&quot;</span>,
+      <span class="k">&quot;target_layer&quot;</span>: <span class="s">&quot;both&quot;</span>,
+      <span class="k">&quot;period_filter&quot;</span>: <span class="c">null</span>,
+      <span class="k">&quot;coverage_threshold&quot;</span>: <span class="n">0.8</span>
+    }
+  ]
+}</pre>
+    </div>
+  </article>
+
+  <!-- 05.3 Retriever -->
+  <article class="stage" id="stage-retrieve">
+    <div class="sidebar">
+      <span class="section-num small">05.3</span>
+      <span class="eyebrow">Retriever</span>
+      <span class="stage-model">BGE&#8209;small + BM25</span>
+    </div>
+    <div class="argument">
+      <h3>Find evidence, two ways.</h3>
+      <p>
+        Hybrid retrieval: dense embeddings (semantic) plus BM25 (lexical). Channel&#8209;aware
+        pre&#8209;filter narrows to the right kind of facts before scoring. Numbers come from a
+        separate XBRL fact store, so financial values are never read out of prose by an LLM.
+      </p>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D2 &mdash; first retrieval pass for slot S1</span><span class="k">vector_query  </span> <span class="s">&quot;Did Netflix ever state it had no plans to add ads?&quot;</span>
+<span class="k">bm25_terms    </span> <span class="s">[&quot;Netflix no ads plan&quot;, &quot;no advertising strategy&quot;,
+                  &quot;ad-free commitment&quot;]</span>
+<span class="k">period_filter </span> <span class="c">null</span>
+
+<span class="k">candidates    </span> <span class="n">8 facts</span> <span class="c"># top RRF scores</span>
+  F-PROSE-nflx-q1-2023-transcript-0078   <span class="n">rrf=0.0288</span>
+  F-PROSE-nflx-q4-2017-transcript-0070   <span class="n">rrf=0.0159</span>   <span class="v">&larr; supported</span>
+  F-PROSE-nflx-q3-2017-transcript-0097   <span class="n">rrf=0.0156</span>   <span class="v">&larr; supported</span>
+  F-PROSE-nflx-q2-2022-transcript-0031   <span class="n">rrf=0.0159</span>   <span class="w">&larr; contradicts</span>
+  ...</pre>
+    </div>
+  </article>
+
+  <!-- 05.4 Verifier -->
+  <article class="stage" id="stage-verify">
+    <div class="sidebar">
+      <span class="section-num small">05.4</span>
+      <span class="eyebrow">Verifier</span>
+      <span class="stage-model">Qwen2.5 72B</span>
+    </div>
+    <div class="argument">
+      <h3>Check that the evidence answers the question.</h3>
+      <p>
+        The Verifier doesn&rsquo;t write the answer &mdash; it grades the evidence against the slot&rsquo;s
+        coverage rubric. Right company? Right period? Right metric? Numerically exact?
+        If anything fails, the system either re&#8209;retrieves or downgrades the outcome.
+      </p>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D2 &mdash; verifier verdict, slot S1</span><span class="k">coverage_score        </span> <span class="n">0.8</span>
+<span class="k">verdict               </span> <span class="v">COVERED</span>
+<span class="k">supported_candidates  </span> <span class="n">3</span>
+  F-PROSE-nflx-q4-2017-transcript-0070
+  F-PROSE-nflx-q3-2017-transcript-0097
+  F-PROSE-nflx-q1-2023-transcript-0066
+
+<span class="k">contradiction_details </span>
+  <span class="s">&quot;Conflicting statements about Netflix&rsquo;s plans for ads.</span>
+  <span class="s"> One statement suggests no plans to add ads, while</span>
+  <span class="s"> another suggests introducing ads as a dimension of</span>
+  <span class="s"> plan structure.&quot;</span>
+  <span class="k">conflicting_ids: </span>
+    F-PROSE-nflx-q4-2017-transcript-0070
+    F-PROSE-nflx-q2-2022-transcript-0031</pre>
+    </div>
+  </article>
+
+  <!-- 05.5 Refutation Agent -->
+  <article class="stage" id="stage-refute">
+    <div class="sidebar">
+      <span class="section-num small">05.5</span>
+      <span class="eyebrow">Refutation agent</span>
+      <span class="stage-model">Mistral Large 2411</span>
+    </div>
+    <div class="argument">
+      <h3>Then try to prove the answer wrong.</h3>
+      <p>
+        The most distinctive stage. The Refutation Agent reads the answer the system is
+        about to give, picks the most attackable claim, generates a counter&#8209;hypothesis, and
+        searches the corpus for evidence that <em>contradicts</em> the answer. It runs seven
+        strategies, each tuned to a specific way financial reporting misleads.
+      </p>
+      <ol class="strategies">
+        <li><span class="n">01</span><span class="name">restated_value</span><span class="gloss">same metric, different number on a later report</span></li>
+        <li><span class="n">02</span><span class="name">revised_value</span><span class="gloss">guidance updated mid&#8209;cycle</span></li>
+        <li><span class="n">03</span><span class="name">guidance_vs_actual</span><span class="gloss">what was promised vs. what happened</span></li>
+        <li><span class="n">04</span><span class="name">later_reversal</span><span class="gloss">a strategic position overturned by a later filing</span></li>
+        <li><span class="n">05</span><span class="name">alternative_cause</span><span class="gloss">the stated cause hides a better explanation</span></li>
+        <li><span class="n">06</span><span class="name">materialization</span><span class="gloss">a disclosed risk did or didn&rsquo;t come to pass</span></li>
+        <li><span class="n">07</span><span class="name">policy_change</span><span class="gloss">an accounting or operating policy changed across periods</span></li>
+      </ol>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D2 &mdash; refutation hypothesis tested against the 2017 claim</span><span class="k">hypothesis_id      </span> <span class="s">h_1</span>
+<span class="k">strategy           </span> <span class="v">later_reversal</span>
+<span class="k">targets_claim_id   </span> <span class="s">F-PROSE-nflx-q4-2017-transcript-0070</span>
+
+<span class="k">hypothesis_text    </span>
+  <span class="s">&quot;Netflix&rsquo;s Q4 2022 shareholder letter announced an</span>
+  <span class="s"> ad-supported tier, reversing its earlier no-ads position.&quot;</span>
+
+<span class="k">rationale          </span>
+  <span class="s">&quot;If Netflix introduced an ad-supported tier, it would</span>
+  <span class="s"> contradict the earlier strategic claim that not having</span>
+  <span class="s"> advertising was a differentiator.&quot;</span>
+
+<span class="k">refutation_verdict </span> <span class="w">STRONGLY_REFUTED</span>
+<span class="k">evidence_ids       </span>
+  F-PROSE-nflx-q2-2022-letter-0060
+  F-PROSE-nflx-q3-2022-transcript-0001
+<span class="k">overall_verdict    </span> <span class="w">refutation_to_loop</span>   <span class="c"># triggers re-retrieval</span></pre>
+    </div>
+  </article>
+
+  <!-- 05.6 Generator + Governor -->
+  <article class="stage" id="stage-generate">
+    <div class="sidebar">
+      <span class="section-num small">05.6</span>
+      <span class="eyebrow">Generator + governor</span>
+      <span class="stage-model">DeepSeek&#8209;Chat</span>
+    </div>
+    <div class="argument">
+      <h3>Write the answer. Disclose the disagreement.</h3>
+      <p>
+        Only now does the Generator run. It composes prose with assertion&#8209;date attribution
+        &mdash; every claim cites the document and the date it was made on. The Governor then
+        checks the answer against the schema, the citations, and the disclosed contradictions
+        before anything goes out.
+      </p>
+    </div>
+    <div class="display">
+      <pre class="artifact"><span class="artifact-label">D2 &mdash; final answer with disclosed reversal</span><span class="c">// final answer_text, after refutation loop</span>
+
+<span class="s">In 2017 and 2018, Netflix executives stated that the company had</span>
+<span class="s">no plans to add advertising. Reed Hastings noted in the Q3 2017</span>
+<span class="s">earnings call (2017-10-16) that &quot;Netflix&rsquo;s focus is not expanding</span>
+<span class="s">in new ads at all,&quot; and reiterated in the Q4 2017 earnings call</span>
+<span class="s">(2018-01-22) that &quot;not having advertising is an important</span>
+<span class="s">strategic differentiator for Netflix.&quot;</span>
+
+<span class="s">However, Netflix reversed this position in 2022. The Q2 2022</span>
+<span class="s">shareholder letter (2022-07-19) announced plans to launch an</span>
+<span class="s">ad-supported tier &quot;around the early part of 2023,&quot; and Greg</span>
+<span class="s">Peters confirmed in the Q3 2022 earnings call (2022-10-18) that</span>
+<span class="s">Netflix had &quot;announced details for the new Basic with Ads tier</span>
+<span class="s">last week launching in the U.S. and 11 other markets.&quot;</span>
+
+<span class="k">claims              </span> <span class="n">2 grounded</span>
+<span class="k">disclosed_refutations </span> <span class="n">1</span> <span class="c"># later_reversal, strongly_refuted</span>
+<span class="k">degradation_level   </span> <span class="v">NORMAL</span>
+<span class="k">adversarially_probed</span> <span class="v">true</span></pre>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================
+     06. THE PROOF &mdash; interactive side-by-side
+     ============================================================ -->
+<section class="section" id="proof" data-compare>
+  <div class="sidebar">
+    <span class="section-num">06</span>
+    <span class="eyebrow">The proof</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">Same question. Same corpus. Two systems.</h2>
+    <p>
+      Watch what happens when both pipelines are asked the question from the hero.
+      The Normal RAG column is a plausible reconstruction; the BRAG column is verbatim
+      from the actual D2 trace.
+    </p>
+  </div>
+  <div class="full compare-wrap">
+
+    <div class="compare-query">
+      <span class="label">Query</span>
+      <span class="q">&ldquo;Did Netflix ever say it had no plans to add ads?&rdquo;</span>
+    </div>
+
+    <div class="compare-grid">
+
+      <!-- Normal RAG column -->
+      <div class="compare-col" data-system="normal">
+        <header>
+          <span class="eyebrow no-rule">Baseline</span>
+          <h3>Normal RAG</h3>
+        </header>
+
+        <div class="compare-stage" data-step="1">
+          <span class="compare-stage-label">01 &middot; Retrieved</span>
+          <div class="compare-stage-body">Top match by cosine similarity:<br>
+            <em>Q4 2017 earnings call &mdash; &ldquo;not having advertising is an important strategic differentiator for Netflix.&rdquo;</em>
+          </div>
+        </div>
+
+        <div class="compare-stage" data-step="2">
+          <span class="compare-stage-label">02 &middot; Generated</span>
+          <div class="compare-stage-body prose">No. Netflix has stated that not having advertising is an important strategic differentiator.</div>
+        </div>
+
+        <div class="compare-outcome fail">Confidently wrong</div>
+      </div>
+
+      <!-- BRAG column -->
+      <div class="compare-col" data-system="brag">
+        <header>
+          <span class="eyebrow no-rule">Cybernetic</span>
+          <h3>BRAG</h3>
+        </header>
+
+        <div class="compare-stage" data-step="1">
+          <span class="compare-stage-label">01 &middot; Planned</span>
+          <div class="compare-stage-body">evidence_type: <span class="k" style="color:var(--ink)">strategic_position</span><br>period_filter: <span class="k" style="color:var(--ink)">null</span> (all history)</div>
+        </div>
+
+        <div class="compare-stage" data-step="2">
+          <span class="compare-stage-label">02 &middot; Retrieved</span>
+          <div class="compare-stage-body">8 candidate facts, BGE&#8209;small + BM25 RRF<br>3 supported, 1 contradicting (Q2 2022)</div>
+        </div>
+
+        <div class="compare-stage" data-step="3">
+          <span class="compare-stage-label">03 &middot; Verified</span>
+          <div class="compare-stage-body">coverage: <span style="color:var(--verify)">COVERED (0.80)</span><br>contradiction flagged on Q4&nbsp;2017 vs Q2&nbsp;2022</div>
+        </div>
+
+        <div class="compare-stage" data-step="4">
+          <span class="compare-stage-label">04 &middot; Refuted</span>
+          <div class="compare-stage-body">strategy: <span style="color:var(--signal)">later_reversal</span><br>hypothesis: <em>&ldquo;Q4 2022 letter announced an ad&#8209;supported tier, reversing the earlier no&#8209;ads position.&rdquo;</em><br>verdict: <span style="color:var(--signal)">STRONGLY_REFUTED</span> &rarr; loop re&#8209;entry</div>
+        </div>
+
+        <div class="compare-stage" data-step="5">
+          <span class="compare-stage-label">05 &middot; Generated</span>
+          <div class="compare-stage-body prose">Yes &mdash; in 2017 and 2018 Netflix executives stated they had no plans to add ads. This position was reversed in 2022 with the announcement of the ad&#8209;supported tier (Q2&nbsp;2022 letter, Q3&nbsp;2022 call).</div>
+        </div>
+
+        <div class="compare-outcome ok">Temporally complete</div>
+      </div>
+    </div>
+
+    <div class="compare-controls">
+      <div>
+        <button class="btn-text" data-action="next" type="button" aria-controls="proof">
+          Reveal next stage<span class="arrow">&rarr;</span>
+        </button>
+        <span class="compare-note" data-counter aria-live="polite" style="margin-left: 1em;">Stage 1 of 5</span>
+      </div>
+      <div>
+        <button class="btn-text" data-action="all" type="button">Reveal all</button>
+        <button class="btn-text" data-action="reset" type="button" hidden style="margin-left: 1em;">Reset</button>
+      </div>
+    </div>
+
+    <p class="compare-note">
+      <em>Reconstructed for comparison &mdash; BRAG does not ship a baseline RAG.
+      The Normal RAG column shows what a textbook retrieve&#8209;then&#8209;generate pipeline
+      would produce against the same corpus. The BRAG column is verbatim from the
+      actual <a href="demo/D2.html" style="border-bottom:1px solid var(--rule-strong);">D2 trace</a>.</em>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     07. GALLERY &mdash; six worked examples
+     ============================================================ -->
+<section class="section" id="gallery">
+  <div class="sidebar">
+    <span class="section-num">07</span>
+    <span class="eyebrow">The gallery</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">Six queries, end&#8209;to&#8209;end.</h2>
+    <p>
+      Each trace shows the retrieved evidence, the Verifier output, every Refutation Agent
+      hypothesis and verdict, the generated answer, governance violations, and the full
+      execution timeline. Open any one to see the system show its work.
+    </p>
+  </div>
+  <div class="full gallery">
+
+    <a class="trace-card" href="demo/D1.html">
+      <header>
+        <span class="did">D1</span>
+        <span class="kind">Financial</span>
+      </header>
+      <p class="q">What was Netflix&rsquo;s revenue for Q2 2023?</p>
+      <footer>
+        <span class="chip chip--normal">Normal</span>
+        <span class="chip-line">refutation: answer_strengthened</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="trace-card" href="demo/D2.html">
+      <header>
+        <span class="did">D2</span>
+        <span class="kind">Strategic / temporal</span>
+      </header>
+      <p class="q">Did Netflix ever say it had no plans to add ads?</p>
+      <footer>
+        <span class="chip chip--normal">Normal</span>
+        <span class="chip-line">refutation: refutation_to_loop</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="trace-card" href="demo/D3.html">
+      <header>
+        <span class="did">D3</span>
+        <span class="kind">Evolution</span>
+      </header>
+      <p class="q">Has Netflix&rsquo;s stance on advertising changed?</p>
+      <footer>
+        <span class="chip chip--partial">Partial</span>
+        <span class="chip-line">cause: refutation_unresolved</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="trace-card" href="demo/D4.html">
+      <header>
+        <span class="did">D4</span>
+        <span class="kind">Policy</span>
+      </header>
+      <p class="q">Has Netflix&rsquo;s password sharing policy been consistent?</p>
+      <footer>
+        <span class="chip chip--partial">Partial</span>
+        <span class="chip-line">cause: slot_exhaustion</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="trace-card" href="demo/D5.html">
+      <header>
+        <span class="did">D5</span>
+        <span class="kind">Causal</span>
+      </header>
+      <p class="q">Why did Netflix&rsquo;s free cash flow turn positive in 2022?</p>
+      <footer>
+        <span class="chip chip--clarify">Clarification req.</span>
+        <span class="chip-line">cause: slot_exhaustion</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="trace-card" href="demo/D6.html">
+      <header>
+        <span class="did">D6</span>
+        <span class="kind">Out of scope</span>
+      </header>
+      <p class="q">What&rsquo;s Disney&rsquo;s streaming subscriber count?</p>
+      <footer>
+        <span class="chip chip--halt">Hard Halt</span>
+        <span class="chip-line">cause: input_failure</span>
+      </footer>
+      <span class="open">Open trace <span class="arrow">&rarr;</span></span>
+    </a>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     08. ARCHITECTURE &mdash; typographic pipeline
+     ============================================================ -->
+<section class="section" id="architecture">
+  <div class="sidebar">
+    <span class="section-num">08</span>
+    <span class="eyebrow">The architecture</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">The pipeline, end to end.</h2>
+    <p>
+      Every retrieval, verifier verdict, refutation hypothesis, and degradation decision
+      is logged to a <span class="mono">MemoryLedger</span> and rendered into per&#8209;query trace HTML.
+    </p>
+  </div>
+  <div class="full arch">
+
+    <div class="arch-step">
+      <span class="id">in</span>
+      <span class="label">
+        <span class="name">Query</span>
+        <span class="desc">the user&rsquo;s question, free text</span>
+      </span>
+      <span class="meta"></span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">01</span>
+      <span class="label">
+        <span class="name">Input validation</span>
+        <span class="desc">determines out&#8209;of&#8209;scope / Hard Halt early</span>
+      </span>
+      <span class="meta">deterministic</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">02</span>
+      <span class="label">
+        <span class="name">Planner</span>
+        <span class="desc">decomposes query into evidence slots with period filter + evidence type</span>
+      </span>
+      <span class="meta">Llama&nbsp;3.3 70B</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">03</span>
+      <span class="label">
+        <span class="name">Retriever</span>
+        <span class="desc">hybrid dense (BGE&#8209;small) + lexical (BM25), channel&#8209;aware pre&#8209;filter</span>
+      </span>
+      <span class="meta">BGE + BM25 + RRF</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">04</span>
+      <span class="label">
+        <span class="name">Verifier</span>
+        <span class="desc">constructive coverage + period checks; numerical exactness, rubric&#8209;graded</span>
+      </span>
+      <span class="meta">Qwen2.5 72B</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">05</span>
+      <span class="label">
+        <span class="name">Refutation agent</span>
+        <span class="desc">adversarial counterfactual probe across 7 strategies (restated, revised, guidance vs. actual, later_reversal, alternative_cause, materialization, policy_change)</span>
+      </span>
+      <span class="meta">Mistral Large 2411</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">06</span>
+      <span class="label">
+        <span class="name">Generator</span>
+        <span class="desc">composes answer with assertion&#8209;date attribution</span>
+      </span>
+      <span class="meta">DeepSeek&#8209;Chat</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">07</span>
+      <span class="label">
+        <span class="name">Output governance</span>
+        <span class="desc">schema, citations, OOS / refusal logic, degradation banner</span>
+      </span>
+      <span class="meta">deterministic</span>
+    </div>
+    <div class="arch-arrow">&darr;</div>
+
+    <div class="arch-step">
+      <span class="id">out</span>
+      <span class="label">
+        <span class="name">Answer + MemoryLedger</span>
+        <span class="desc">prose answer with disclosed contradictions, plus full audit trail</span>
+      </span>
+      <span class="meta"></span>
+    </div>
+
+    <div class="factstore">
+      <h3>Fact Store &mdash; dual&#8209;path ingestion</h3>
+      <p>
+        A core design choice: financial values come from XBRL, not from the LLM.
+        Both paths produce the same <span class="mono">FactRecord</span> schema and land in the same
+        store. The Refutation Agent draws from both.
+      </p>
+      <div class="path">
+        <h4>XBRL path</h4>
+        <p>
+          edgartools + lxml parse on&#8209;disk XBRL. Aggregate + UCAN / EMEA / LATAM / APAC
+          geographic segments. <span class="mono">verbatim_anchor</span> matches the formatted display
+          value in rendered HTML, so citations land on the exact figure a human would see.
+        </p>
+      </div>
+      <div class="path">
+        <h4>Prose path</h4>
+        <p>
+          LLM extractor (DeepSeek V3) over chunked filings + transcripts. Six fact types:
+          <span class="mono">operational_metric</span>, <span class="mono">forward_guidance</span>,
+          <span class="mono">strategic_claim</span>, <span class="mono">causal_explanation</span>,
+          <span class="mono">risk_disclosure</span>, <span class="mono">accounting_policy</span>.
+          <span class="mono">financial_metric</span> is XBRL&#8209;only by construction.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     09. HONEST LIMITATIONS
+     ============================================================ -->
+<section class="section section--tight" id="limitations">
+  <div class="sidebar">
+    <span class="section-num">09</span>
+    <span class="eyebrow">Honest limitations</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">This is a portfolio showcase, not a production system.</h2>
+    <p>
+      The architectural pieces are real and audit&#8209;traceable; the calibration is honest
+      about its failure modes.
+    </p>
+  </div>
+  <div class="display">
+    <div class="limitations">
+      <div class="limit">
+        <h4>Corpus coverage gap</h4>
+        <p>
+          Eight pre&#8209;2019 10&#8209;Q filings are missing MD&amp;A and Quantitative&#8209;Risk items.
+          edgartools&rsquo; legacy parser doesn&rsquo;t reach Part&nbsp;I items on old TenQ. The 10&#8209;K side
+          was partially rescued. Queries depending on pre&#8209;2019 narrative may degrade to Partial.
+        </p>
+      </div>
+      <div class="limit">
+        <h4>Adversarial calibration is not exhaustive</h4>
+        <p>
+          The full Phase 4 adversarial slate (<span class="mono">scripts/test_phase4_adversarial.py</span>)
+          does not yet pass 15&hairsp;/&hairsp;15. The six curated demo queries do.
+        </p>
+      </div>
+      <div class="limit">
+        <h4>Generator can flake</h4>
+        <p>
+          OpenRouter / DeepSeek&#8209;Chat occasionally drops mid&#8209;stream. The demo retries once.
+        </p>
+      </div>
+      <div class="limit">
+        <h4>Cost</h4>
+        <p>
+          A full demo run is roughly six minutes of wall&#8209;clock and a handful of cents on OpenRouter.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     10. COLOPHON
+     ============================================================ -->
+<section class="section section--tight" id="colophon">
+  <div class="sidebar">
+    <span class="section-num">10</span>
+    <span class="eyebrow">Colophon</span>
+  </div>
+  <div class="display">
+    <dl class="colophon">
+      <h3>BRAG<span class="sub">Boosted Retrieval&#8209;Augmented Generation</span></h3>
+
+      <div class="col-row"><dt>Built by</dt><dd>Daniel Wipert</dd></div>
+      <div class="col-row mono"><dt>Source</dt><dd><a href="https://github.com/danielwipert/cas.brag">github.com/danielwipert/cas.brag</a></dd></div>
+
+      <div class="col-row mono"><dt>Planner</dt><dd>Llama&nbsp;3.3 70B</dd></div>
+      <div class="col-row mono"><dt>Verifier</dt><dd>Qwen2.5 72B</dd></div>
+      <div class="col-row mono"><dt>Refutation</dt><dd>Mistral Large 2411</dd></div>
+      <div class="col-row mono"><dt>Generator</dt><dd>DeepSeek&#8209;Chat</dd></div>
+      <div class="col-row mono"><dt>Prose extractor</dt><dd>DeepSeek V3</dd></div>
+      <div class="col-row mono"><dt>Embeddings</dt><dd>BAAI / bge&#8209;small&#8209;en&#8209;v1.5</dd></div>
+      <div class="col-row mono"><dt>Provider</dt><dd>OpenRouter</dd></div>
+
+      <div class="col-row"><dt>Type</dt><dd>Fraunces &middot; Inter &middot; JetBrains Mono</dd></div>
+      <div class="col-row"><dt>Designed</dt><dd>in homage to M&uuml;ller&#8209;Brockmann, Lupton, Elam, Vignelli</dd></div>
+
+      <div class="col-row"><dt>Period</dt><dd>May&nbsp;2016 &mdash; May&nbsp;2026</dd></div>
+      <div class="col-row"><dt>Corpus</dt><dd>~120 Netflix filings + earnings&#8209;call transcripts</dd></div>
+    </dl>
+
+    <p class="copyright">&copy; 2026 &middot; All trace data is reproducible from the repository.</p>
+  </div>
+</section>
+
+</main>
+
+<script src="assets/js/comparison.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+/* ============================================================
+   BRAG trace pages — editorial restyle
+   Maps the existing renderer's class names to the new design
+   system. Loaded alongside tokens.css.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+body {
+  margin: 0;
+  padding: var(--space-5) clamp(20px, 5vw, 64px);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+  font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+}
+img, svg { display: block; max-width: 100%; height: auto; }
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  border-top: var(--hairline-strong);
+  padding-top: var(--space-4);
+}
+
+/* --- trace masthead nav -------------------------------------- */
+.container::before {
+  content: "BRAG  /  trace";
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: var(--space-3);
+}
+
+a { color: inherit; }
+a:hover { color: var(--signal); }
+
+/* --- type ---------------------------------------------------- */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  color: var(--ink);
+}
+h1 {
+  font-size: var(--fs-h2);
+  font-variation-settings: "opsz" 48;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 var(--space-2);
+}
+h2 {
+  font-size: var(--fs-eyebrow);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 var(--space-3);
+}
+
+/* --- panel (was: dark card with rounded corners) ------------- */
+.panel {
+  background: var(--paper);
+  border: 0;
+  border-top: var(--hairline);
+  border-radius: 0;
+  padding: var(--space-5) 0 var(--space-4);
+  margin: 0;
+}
+.panel:first-of-type { border-top: 0; padding-top: 0; }
+
+/* --- meta dt/dd --------------------------------------------- */
+.meta {
+  display: grid;
+  grid-template-columns: 12em 1fr;
+  column-gap: var(--space-3);
+  row-gap: 4px;
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-caption);
+}
+.meta dt {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: var(--fs-eyebrow);
+  color: var(--ink-mute);
+}
+.meta dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  word-break: break-word;
+}
+
+/* --- row (horizontal flex of badges) ------------------------- */
+.row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --- badge (chip) -------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 3px 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  color: var(--ink-mute);
+  border-radius: 0;
+}
+.badge.green   { color: var(--verify); }
+.badge.amber   { color: var(--warn); }
+.badge.red     { color: var(--signal); }
+.badge.blue    { color: var(--ink); }
+.badge.outline { color: var(--ink-mute); }
+.badge.strategy-num  { color: var(--ink); }
+.badge.strategy-narr { color: var(--signal); }
+
+/* --- pill (smaller, used inline) ----------------------------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  padding: 1px 8px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-mute);
+  border-radius: 0;
+  margin-right: 4px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.pill.green { color: var(--verify); border-color: var(--verify); }
+.pill.amber { color: var(--warn); border-color: var(--warn); }
+.pill.red   { color: var(--signal); border-color: var(--signal); }
+
+/* --- code / mono inline ------------------------------------- */
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+.ids {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+
+/* --- answer + claims --------------------------------------- */
+.answer {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  max-width: 60em;
+  color: var(--ink);
+}
+.answer p { margin: 0 0 var(--space-2); }
+
+.claim {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-3);
+  background: var(--paper-raised);
+  border: var(--hairline);
+  border-left: 3px solid var(--ink);
+  border-radius: 0;
+  font-size: var(--fs-body);
+  max-width: 60em;
+}
+.claim .type {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-mute);
+  margin-right: var(--space-2);
+  display: inline-block;
+}
+.claim .cite {
+  display: inline-block;
+  margin: 0 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink-soft);
+  background: transparent;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  text-decoration: none;
+  transition: color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.claim .cite:hover { color: var(--signal); border-color: var(--signal); }
+
+/* --- violation --------------------------------------------- */
+.violation {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  background: var(--paper-raised);
+  border: var(--hairline);
+  border-left: 3px solid var(--signal);
+  border-radius: 0;
+  font-size: var(--fs-body);
+  max-width: 60em;
+}
+.violation .sev {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal);
+  font-size: var(--fs-eyebrow);
+  margin-right: var(--space-2);
+}
+
+.empty, .gap-text {
+  color: var(--ink-mute);
+  font-style: italic;
+  font-size: var(--fs-caption);
+}
+
+/* --- sparkline (coverage progression) ---------------------- */
+.sparkline {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+  margin-left: var(--space-1);
+  align-items: flex-end;
+  height: 24px;
+}
+.sparkline .bar {
+  display: inline-block;
+  width: 9px;
+  border-radius: 0;
+}
+/* override inline bar colors */
+.sparkline .bar[style*="--green"], .sparkline .bar[style*="green"] { background: var(--verify) !important; }
+.sparkline .bar[style*="--amber"], .sparkline .bar[style*="amber"] { background: var(--warn) !important; }
+.sparkline .bar[style*="--red"],   .sparkline .bar[style*="red"]   { background: var(--signal) !important; }
+
+/* --- tables ------------------------------------------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-caption);
+  margin-top: var(--space-3);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--hairline);
+  padding: var(--space-2) var(--space-2);
+}
+th {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  border-bottom: 1px solid var(--rule-strong);
+}
+tr.detail td {
+  background: var(--paper-raised);
+  color: var(--ink-soft);
+  font-size: var(--fs-caption);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-bottom: var(--hairline);
+}
+
+/* --- details/summary -------------------------------------- */
+details {
+  margin-top: var(--space-2);
+}
+details > summary {
+  cursor: pointer;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  letter-spacing: 0;
+  text-transform: none;
+  list-style: none;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--rule);
+  display: inline-block;
+}
+details > summary:hover { color: var(--signal); border-bottom-color: var(--signal); }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "+  "; color: var(--ink-mute); }
+details[open] > summary::before { content: "–  "; }
+
+/* --- footer ------------------------------------------------ */
+.footer {
+  color: var(--ink-mute);
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  text-align: left;
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: var(--hairline-strong);
+}
+.footer::after {
+  content: " ·  back to landing ↗";
+  display: inline;
+}
+
+/* trace-page back link (we'll inject this in markup) */
+.trace-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+}
+.trace-back:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* override any inline styles from the renderer that conflict */
+[style*="color: var(--text-dim)"] { color: var(--ink-mute) !important; }
+[style*="background: var(--green)"] { background: var(--verify) !important; }
+[style*="background: var(--amber)"] { background: var(--warn) !important; }
+[style*="background: var(--red)"]   { background: var(--signal) !important; }
+
+/* --- demo index page hooks --------------------------------- */
+.demo-index ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: var(--hairline-strong);
+}
+.demo-index li {
+  display: grid;
+  grid-template-columns: 4em 1fr max-content;
+  column-gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--hairline);
+  align-items: baseline;
+}
+.demo-index li a {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-h5);
+  font-variation-settings: "opsz" 24;
+  border-bottom: 1px solid var(--rule);
+}
+.demo-index li a:hover { border-bottom-color: var(--signal); }
