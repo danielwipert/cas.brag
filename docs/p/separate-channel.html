@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Numbers come through a separate channel — BRAG Principle 02 &middot; BRAG</title>
+<meta name="description" content="Every time an LLM reads a number out of prose, you have to trust it didn't paraphrase or invent it. Here's how BRAG eliminates a whole category of hallucination.">
+<meta property="og:title" content="Numbers come through a separate channel &mdash; BRAG Principle 02">
+<meta property="og:description" content="Every time an LLM reads a number out of prose, you have to trust it didn't paraphrase or invent it. Here's how BRAG eliminates a whole category of hallucination.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principle 02 of 06</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">Principle 02</span>
+    <div class="number">02</div>
+    <h1>Numbers come through a separate channel.</h1>
+    <p class="lede">The LLM never writes a number it didn&rsquo;t receive as a typed value.</p>
+  </header>
+
+  <section class="mini-section">
+    <h2>Why it matters</h2>
+    <p>Every time an LLM reads a number out of prose, you have to trust that it didn&rsquo;t
+    paraphrase, round, or invent it. There&rsquo;s no good way to verify after the fact. The
+    model can launder a guess as a citation because the citation points to a passage that
+    <em>contains</em> the number, not to the number itself.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>The cost of not doing it</h2>
+    <div class="mini-callout">
+      <span class="label">Scenario</span>
+      <p>Your AI assistant tells your sales team &ldquo;Q3 revenue was&hairsp;$8.5&nbsp;billion.&rdquo;
+    That number came from a passage that said &ldquo;Approximately&hairsp;$8.5&nbsp;billion in
+    adjusted revenue, excluding one&#8209;time items.&rdquo; The &ldquo;approximately&rdquo; disappeared.
+    The &ldquo;adjusted&rdquo; disappeared. The &ldquo;excluding one&#8209;time items&rdquo; disappeared. The
+    citation links back correctly. Nobody catches it until an investor calls.</p>
+    </div>
+  </section>
+
+  <section class="mini-section">
+    <h2>How BRAG does it</h2>
+    <p>Financial numbers come from XBRL &mdash; the structured data the SEC requires every
+    public company to file. The ingestion pipeline parses XBRL deterministically, stores
+    each value as a typed <span class="mono">FactRecord</span> with its source ID, period,
+    and exact display string. The LLM never reads numbers out of prose; it cites them by
+    ID and the renderer displays them verbatim.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>Apply it in your own system</h2>
+    <p>The pattern generalises to any structured data your domain has.</p>
+    <ol>
+      <li>Have structured data? (Databases, APIs, CSVs.) Use it directly. Never paraphrase it through an LLM.</li>
+  <li>Have unstructured data with numbers in it? Pre&#8209;extract those numbers with a deterministic parser (regex, OCR + validation, structured extraction) and store them as typed values with provenance.</li>
+  <li>When the LLM cites a number, cite it by reference, not by retyping it.</li>
+    </ol>
+<p>The rule: <strong>the LLM never writes a number it didn&rsquo;t receive as a typed value.</strong></p>
+  </section>
+
+  <nav class="mini-nav" aria-label="Other principles">
+    <a href="typed-evidence.html"><span class="label">&larr; Previous</span><span class="title">01 &middot; Type your evidence</span></a>
+    <a href="refusal-step.html" class="next"><span class="label">Next &rarr;</span><span class="title">03 &middot; Add a refusal step</span></a>
+  </nav>
+
+  <section class="mini-cta">
+    <p>This is one of <strong>six principles</strong> abstracted from <strong>BRAG</strong>
+    &mdash; a retrieval&#8209;augmented generation system with two LLM skeptics gating every
+    confident answer. Tested on ten years of Netflix&rsquo;s public financial reporting.</p>
+    <div class="mini-cta-actions">
+      <a href="../#builders">See all six principles &rarr;</a>
+      <a href="../">Read the full showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>

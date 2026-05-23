@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Type your evidence — BRAG Principle 01 &middot; BRAG</title>
+<meta name="description" content="When a RAG system retrieves 'the most similar passage,' it has no idea what kind of passage that is. Here's why typing evidence is BRAG's first rule for trustworthy agentic AI.">
+<meta property="og:title" content="Type your evidence &mdash; BRAG Principle 01">
+<meta property="og:description" content="When a RAG system retrieves 'the most similar passage,' it has no idea what kind of passage that is. Here's why typing evidence is BRAG's first rule for trustworthy agentic AI.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principle 01 of 06</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">Principle 01</span>
+    <div class="number">01</div>
+    <h1>Type your evidence.</h1>
+    <p class="lede">Embeddings give you &ldquo;similar.&rdquo; Type tags give you &ldquo;relevant.&rdquo;</p>
+  </header>
+
+  <section class="mini-section">
+    <h2>Why it matters</h2>
+    <p>When a RAG system retrieves &ldquo;the most similar passage,&rdquo; it has no idea what
+    <em>kind</em> of passage that is. A forward&#8209;looking statement and a historical fact
+    about the same number look almost identical to an embedding model. So do an opinion
+    and a policy. The retriever returns whichever scored higher; the LLM treats them all
+    the same way; your answer ends up grounded in the wrong type of evidence.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>The cost of not doing it</h2>
+    <div class="mini-callout">
+      <span class="label">Scenario</span>
+      <p>You ask &ldquo;What are our compliance obligations under GDPR?&rdquo; The retriever returns
+    a chunk that&rsquo;s an <em>internal opinion piece</em> from a 2019 blog post titled
+    &ldquo;GDPR compliance is mostly common sense.&rdquo; Both look relevant. The opinion scores
+    higher because it&rsquo;s more conversational. Your AI answers based on the opinion.</p>
+    </div>
+  </section>
+
+  <section class="mini-section">
+    <h2>How BRAG does it</h2>
+    <p>BRAG&rsquo;s Planner emits a <span class="mono">DecompositionPlan</span> &mdash; a list of
+    evidence slots, each tagged with an <span class="mono">evidence_type</span> like
+    <span class="mono">strategic_position</span>, <span class="mono">forward_guidance</span>,
+    <span class="mono">operational_metric</span>, or <span class="mono">accounting_policy</span>.
+    The retriever filters candidates by type before scoring. The Verifier grades coverage
+    against the right rubric for that type.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>Apply it in your own system</h2>
+    <p>You don&rsquo;t need BRAG&rsquo;s specific taxonomy. The move is just: stop treating all chunks as equivalent.</p>
+    <ol>
+      <li>Build a taxonomy of evidence types relevant to your domain (5&ndash;10 categories is usually enough).</li>
+  <li>Tag documents and chunks at ingest time with one or more types.</li>
+  <li>Have your planner decide what kind of evidence each question needs.</li>
+  <li>Filter retrieval candidates by type before similarity scoring.</li>
+    </ol>
+  </section>
+
+  <nav class="mini-nav" aria-label="Other principles">
+    <span class="placeholder"></span>
+    <a href="separate-channel.html" class="next"><span class="label">Next &rarr;</span><span class="title">02 &middot; Numbers come through a separate channel</span></a>
+  </nav>
+
+  <section class="mini-cta">
+    <p>This is one of <strong>six principles</strong> abstracted from <strong>BRAG</strong>
+    &mdash; a retrieval&#8209;augmented generation system with two LLM skeptics gating every
+    confident answer. Tested on ten years of Netflix&rsquo;s public financial reporting.</p>
+    <div class="mini-cta-actions">
+      <a href="../#builders">See all six principles &rarr;</a>
+      <a href="../">Read the full showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>

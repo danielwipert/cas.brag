@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Make every decision logged — BRAG Principle 05 &middot; BRAG</title>
+<meta name="description" content="When something goes wrong with your AI, the worst position is 'we don't know why it said that.' Here's why an audit trail is non-negotiable.">
+<meta property="og:title" content="Make every decision logged &mdash; BRAG Principle 05">
+<meta property="og:description" content="When something goes wrong with your AI, the worst position is 'we don't know why it said that.' Here's why an audit trail is non-negotiable.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principle 05 of 06</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">Principle 05</span>
+    <div class="number">05</div>
+    <h1>Make every decision logged.</h1>
+    <p class="lede">When someone asks &ldquo;why did the system do that?&rdquo; you should be able to show them, step by step.</p>
+  </header>
+
+  <section class="mini-section">
+    <h2>Why it matters</h2>
+    <p>When something goes wrong with your AI &mdash; and it will &mdash; the worst possible
+    position is &ldquo;we don&rsquo;t know why it said that.&rdquo; An audit trail that captures every
+    retrieval, every model verdict, every degradation decision, and every tool call lets
+    you replay any user&rsquo;s session and explain it. It&rsquo;s not optional in healthcare,
+    finance, legal, or government. It&rsquo;s invaluable everywhere else.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>The cost of not doing it</h2>
+    <div class="mini-callout">
+      <span class="label">Scenario</span>
+      <p>A customer reports that your AI gave them wrong information. You can&rsquo;t reproduce
+    the issue because the system is stochastic. You can&rsquo;t tell them why it answered the
+    way it did. They escalate to compliance. Compliance asks for the audit log. There
+    isn&rsquo;t one. The incident becomes a company&#8209;wide policy review.</p>
+    </div>
+  </section>
+
+  <section class="mini-section">
+    <h2>How BRAG does it</h2>
+    <p>Every BRAG run produces a <span class="mono">MemoryLedger</span> &mdash; a complete
+    record of every retrieval pass (candidate IDs, scores, filters used), every Verifier
+    verdict (with rubric scores and contradictions), every Refutation Agent hypothesis
+    (with strategy, target, evidence, verdict), every coverage progression, and every
+    degradation decision. The ledger is rendered into per&#8209;query trace HTML &mdash; the same
+    data the system used. You can replay any query and show your work step by step.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>Apply it in your own system</h2>
+    <p>Build the ledger from day one. Retrofitting one later is painful.</p>
+    <ol>
+      <li>Decide upfront: every decision your agent makes goes in a ledger.</li>
+  <li>Use a single structured format (JSON, protobuf, whatever) &mdash; not log lines.</li>
+  <li>Capture <em>the evidence the model saw</em>, not just the model&rsquo;s output. Token usage, retrieved IDs, intermediate prompts.</li>
+  <li>Build a replay UI early, even if it&rsquo;s ugly. You&rsquo;ll use it constantly.</li>
+  <li>Make the ledger user&#8209;visible when the user asks. Trust comes from being able to show your work.</li>
+    </ol>
+  </section>
+
+  <nav class="mini-nav" aria-label="Other principles">
+    <a href="run-a-skeptic.html"><span class="label">&larr; Previous</span><span class="title">04 &middot; Run a skeptic against your own answer</span></a>
+    <a href="degrade-visibly.html" class="next"><span class="label">Next &rarr;</span><span class="title">06 &middot; Degrade visibly</span></a>
+  </nav>
+
+  <section class="mini-cta">
+    <p>This is one of <strong>six principles</strong> abstracted from <strong>BRAG</strong>
+    &mdash; a retrieval&#8209;augmented generation system with two LLM skeptics gating every
+    confident answer. Tested on ten years of Netflix&rsquo;s public financial reporting.</p>
+    <div class="mini-cta-actions">
+      <a href="../#builders">See all six principles &rarr;</a>
+      <a href="../">Read the full showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Degrade visibly — BRAG Principle 06 &middot; BRAG</title>
+<meta name="description" content="Build explicit outcome states and surface them in the response. Here's how visible degradation keeps trust where silent failure loses it.">
+<meta property="og:title" content="Degrade visibly &mdash; BRAG Principle 06">
+<meta property="og:description" content="Build explicit outcome states and surface them in the response. Here's how visible degradation keeps trust where silent failure loses it.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principle 06 of 06</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">Principle 06</span>
+    <div class="number">06</div>
+    <h1>Degrade visibly.</h1>
+    <p class="lede">The worst failure mode is a confident wrong answer; the second worst is a system that fails silently.</p>
+  </header>
+
+  <section class="mini-section">
+    <h2>Why it matters</h2>
+    <p>There are three failure modes for an AI system: silent (it does the wrong thing
+    without telling you), confident&#8209;wrong (it tells you the wrong thing with conviction),
+    and visibly degraded (it tells you exactly what it couldn&rsquo;t do). The first two are
+    how AI loses trust. The third is how AI keeps trust.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>The cost of not doing it</h2>
+    <div class="mini-callout">
+      <span class="label">Scenario</span>
+      <p>Your AI is asked a complex question that requires synthesising two facts. It only
+    finds one of them. Rather than say &ldquo;I found A but not B, here&rsquo;s A only,&rdquo; it
+    confidently answers based on A alone. The user assumes both A and B were considered.
+    They make a decision based on incomplete information.</p>
+    </div>
+  </section>
+
+  <section class="mini-section">
+    <h2>How BRAG does it</h2>
+    <p>BRAG has four explicit outcome states, each with its own degradation handling:
+    <strong>Normal</strong> (full answer, all evidence covered),
+    <strong>Partial</strong> (answer is incomplete; the disclosed gap explains what&rsquo;s
+    missing), <strong>Clarification Request</strong> (the question is ambiguous; the system
+    asks for more), and <strong>Hard Halt</strong> (the question is out of scope; the
+    system refuses). Every answer is annotated with its degradation level. Every disclosed
+    gap, contradiction, and refutation is surfaced in the response itself. The reader sees
+    not just the answer, but the <em>quality</em> of the answer.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>Apply it in your own system</h2>
+    <p>Outcome states don&rsquo;t need to be the same as BRAG&rsquo;s. They just need to be explicit.</p>
+    <ol>
+      <li>Define your outcome states explicitly. (3&ndash;5 is usually enough.)</li>
+  <li>Surface them in the UI, not just in the logs.</li>
+  <li>Train your users to read them. A small &ldquo;I&rsquo;m only ~70% confident in this&rdquo; tag is more useful than a confident&#8209;looking long answer.</li>
+  <li>Track the distribution of outcomes over time. A system that&rsquo;s always &ldquo;Normal&rdquo; is probably hiding partial failures.</li>
+    </ol>
+  </section>
+
+  <nav class="mini-nav" aria-label="Other principles">
+    <a href="logged-decisions.html"><span class="label">&larr; Previous</span><span class="title">05 &middot; Make every decision logged</span></a>
+    <span class="placeholder"></span>
+  </nav>
+
+  <section class="mini-cta">
+    <p>This is one of <strong>six principles</strong> abstracted from <strong>BRAG</strong>
+    &mdash; a retrieval&#8209;augmented generation system with two LLM skeptics gating every
+    confident answer. Tested on ten years of Netflix&rsquo;s public financial reporting.</p>
+    <div class="mini-cta-actions">
+      <a href="../#builders">See all six principles &rarr;</a>
+      <a href="../">Read the full showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>

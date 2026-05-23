@@ -740,7 +740,7 @@
   </div>
   <div class="display">
     <div class="problem-stack">
-      <div class="problem-row">
+      <div class="problem-row" id="principle-typed-evidence">
         <h4>01 &mdash; Type your evidence</h4>
         <p>
           Don&rsquo;t let your retriever return undifferentiated chunks. Tag what <em>kind</em> of
@@ -748,8 +748,12 @@
           structured number) and let downstream stages reason about coverage on those types.
           Embeddings give you &ldquo;similar.&rdquo; Type tags give you &ldquo;relevant.&rdquo;
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/typed-evidence.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/typed-evidence.html">Copy link</button>
+        </div>
       </div>
-      <div class="problem-row">
+      <div class="problem-row" id="principle-separate-channel">
         <h4>02 &mdash; Numbers come through a separate channel</h4>
         <p>
           Never let an LLM read structured values out of prose. Parse them deterministically,
@@ -757,8 +761,12 @@
           be a database, a CSV, an internal API. The rule: the LLM never writes a number it
           didn&rsquo;t receive as a typed value.
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/separate-channel.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/separate-channel.html">Copy link</button>
+        </div>
       </div>
-      <div class="problem-row">
+      <div class="problem-row" id="principle-refusal-step">
         <h4>03 &mdash; Add a refusal step</h4>
         <p>
           Before any retrieval runs, decide whether the question (or task) is even in scope.
@@ -766,16 +774,24 @@
           and the hardest to ship. Default agentic systems happily try anything; trustworthy
           ones refuse out&#8209;of&#8209;scope work explicitly.
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/refusal-step.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/refusal-step.html">Copy link</button>
+        </div>
       </div>
-      <div class="problem-row">
+      <div class="problem-row" id="principle-run-a-skeptic">
         <h4>04 &mdash; Run a skeptic against your own answer</h4>
         <p>
           A second LLM whose only job is to refute the draft answer catches things no eval
           set can. It roughly doubles your LLM cost per query &mdash; that&rsquo;s real &mdash; but it&rsquo;s
           the difference between &ldquo;demo&#8209;good&rdquo; and &ldquo;I&rsquo;d let a regulated customer see this.&rdquo;
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/run-a-skeptic.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/run-a-skeptic.html">Copy link</button>
+        </div>
       </div>
-      <div class="problem-row">
+      <div class="problem-row" id="principle-logged-decisions">
         <h4>05 &mdash; Make every decision logged</h4>
         <p>
           Every retrieval, verdict, hypothesis, degradation, and tool call goes in a single
@@ -783,8 +799,12 @@
           should be able to walk them through it step by step. Audit trails aren&rsquo;t optional
           in regulated industries &mdash; and they&rsquo;re invaluable everywhere else.
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/logged-decisions.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/logged-decisions.html">Copy link</button>
+        </div>
       </div>
-      <div class="problem-row">
+      <div class="problem-row" id="principle-degrade-visibly">
         <h4>06 &mdash; Degrade visibly</h4>
         <p>
           The worst failure mode is a confident wrong answer; the second worst is a system
@@ -792,6 +812,10 @@
           clarification request, refusal &mdash; and surface them in the response itself. Visible
           degradation is the third option, and almost always the right one.
         </p>
+        <div class="principle-actions">
+          <a class="principle-link" href="p/degrade-visibly.html">Full principle <span class="arrow">&rarr;</span></a>
+          <button type="button" class="principle-share" data-url="p/degrade-visibly.html">Copy link</button>
+        </div>
       </div>
     </div>
   </div>
@@ -834,5 +858,6 @@
 </main>
 
 <script src="assets/js/comparison.js" defer></script>
+<script src="assets/js/share.js" defer></script>
 </body>
 </html>

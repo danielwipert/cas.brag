@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Add a refusal step — BRAG Principle 03 &middot; BRAG</title>
+<meta name="description" content="A retrieval system always returns something. Here's why a refusal step is one of BRAG's six rules for trustworthy agentic AI.">
+<meta property="og:title" content="Add a refusal step &mdash; BRAG Principle 03">
+<meta property="og:description" content="A retrieval system always returns something. Here's why a refusal step is one of BRAG's six rules for trustworthy agentic AI.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principle 03 of 06</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">Principle 03</span>
+    <div class="number">03</div>
+    <h1>Add a refusal step.</h1>
+    <p class="lede">A clean &ldquo;I don&rsquo;t know&rdquo; is the highest&#8209;value behaviour an agent can have &mdash; and the hardest to ship.</p>
+  </header>
+
+  <section class="mini-section">
+    <h2>Why it matters</h2>
+    <p>A retrieval system always returns <em>something</em>. Cosine similarity will rank
+    the top 8 documents even when none of them are relevant. An LLM downstream will
+    dutifully write an answer from those 8 documents. The answer will sound confident.
+    The user will trust it. This is how an AI confidently answers questions it shouldn&rsquo;t
+    have taken.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>The cost of not doing it</h2>
+    <div class="mini-callout">
+      <span class="label">Scenario</span>
+      <p>Your support bot is asked about a competitor&rsquo;s product. It retrieves the 8 most
+    similar passages from your own knowledge base (none of which are actually about the
+    competitor) and confidently summarises your own product&rsquo;s features as if they belong
+    to the competitor. The user is misled. You get a ticket later complaining that the
+    &ldquo;competitor product&rdquo; didn&rsquo;t work as you described.</p>
+    </div>
+  </section>
+
+  <section class="mini-section">
+    <h2>How BRAG does it</h2>
+    <p>The first stage of BRAG&rsquo;s pipeline is Input Validation. Before any retrieval runs,
+    the system decides whether the query is in scope. If you ask about Disney&rsquo;s
+    subscribers, BRAG Hard Halts at stage 01 with
+    <span class="mono">cause: input_failure, reason: out_of_scope</span>. Retrieval never
+    runs. Total elapsed time: <span class="mono">0.0s</span>.</p>
+  </section>
+
+  <section class="mini-section">
+    <h2>Apply it in your own system</h2>
+    <p>Refusal looks different in every system, but the discipline is the same.</p>
+    <ol>
+      <li>Define the scope of your system explicitly: what topics, what time period, what entities.</li>
+  <li>Use a small fast model (or even a deterministic check) as a &ldquo;first pass&rdquo; before expensive retrieval and generation.</li>
+  <li>Build an explicit &ldquo;I can&rsquo;t answer that&rdquo; outcome state and surface it in your UI.</li>
+  <li>Track refusal rate as a metric. If it&rsquo;s zero, your system is lying.</li>
+    </ol>
+<p>A clean &ldquo;I can&rsquo;t answer that&rdquo; is the single highest&#8209;trust action an AI assistant can take.</p>
+  </section>
+
+  <nav class="mini-nav" aria-label="Other principles">
+    <a href="separate-channel.html"><span class="label">&larr; Previous</span><span class="title">02 &middot; Numbers come through a separate channel</span></a>
+    <a href="run-a-skeptic.html" class="next"><span class="label">Next &rarr;</span><span class="title">04 &middot; Run a skeptic against your own answer</span></a>
+  </nav>
+
+  <section class="mini-cta">
+    <p>This is one of <strong>six principles</strong> abstracted from <strong>BRAG</strong>
+    &mdash; a retrieval&#8209;augmented generation system with two LLM skeptics gating every
+    confident answer. Tested on ten years of Netflix&rsquo;s public financial reporting.</p>
+    <div class="mini-cta-actions">
+      <a href="../#builders">See all six principles &rarr;</a>
+      <a href="../">Read the full showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>

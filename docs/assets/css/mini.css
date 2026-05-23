@@ -1,0 +1,317 @@
+/* ============================================================
+   BRAG — per-principle mini-page styles
+   Single-column reading layout. Shares tokens.css.
+   ============================================================ */
+
+@import url('main.css');
+
+body {
+  padding: 0;
+}
+
+.mini {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-5) clamp(20px, 5vw, 56px);
+}
+
+/* --- masthead ----------------------------------------------- */
+.mini-masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--hairline);
+  margin-bottom: var(--space-6);
+}
+.mini-back {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: border-color var(--dur) var(--ease-out);
+}
+.mini-back:hover { border-bottom-color: var(--ink); }
+.mini-back .arrow {
+  display: inline-block;
+  margin-right: 0.3em;
+  transition: transform var(--dur) var(--ease-out);
+}
+.mini-back:hover .arrow { transform: translateX(-3px); }
+
+.mini-chrome {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* --- hero --------------------------------------------------- */
+.mini-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--hairline-strong);
+  margin-bottom: var(--space-5);
+}
+.mini-hero .eyebrow {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+.mini-hero .number {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 300;
+  font-variation-settings: "opsz" 72;
+  color: var(--rule-strong);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  margin: 0;
+}
+.mini-hero h1 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  font-variation-settings: "opsz" 48;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0;
+  max-width: 16ch;
+}
+.mini-hero .lede {
+  font-family: var(--font-body);
+  font-size: var(--fs-lead);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  max-width: 36em;
+  margin: 0;
+  font-style: italic;
+}
+
+/* --- body sections ----------------------------------------- */
+.mini-section {
+  padding-block: var(--space-4);
+  border-bottom: var(--hairline);
+}
+.mini-section:last-of-type { border-bottom: 0; }
+.mini-section h2 {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 var(--space-2);
+}
+.mini-section p {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 60ch;
+  margin: 0 0 1em;
+  letter-spacing: -0.005em;
+}
+.mini-section p:last-child { margin-bottom: 0; }
+.mini-section ul, .mini-section ol {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 1em;
+  padding-left: 1.5em;
+  max-width: 60ch;
+}
+.mini-section li { margin-bottom: 0.5em; }
+.mini-section li::marker { color: var(--ink-mute); }
+
+.mini-section strong { font-weight: 600; }
+.mini-section em { font-style: italic; }
+.mini-section .mono {
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+  color: var(--ink-soft);
+}
+
+/* --- callout box (counter-example) -------------------------- */
+.mini-callout {
+  background: var(--paper-raised);
+  border-left: 2px solid var(--signal);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0;
+  max-width: 60em;
+}
+.mini-callout p { color: var(--ink); margin: 0; }
+.mini-callout .label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: var(--space-1);
+}
+
+/* --- BRAG quote (how BRAG implements it) -------------------- */
+.mini-brag-quote {
+  background: transparent;
+  border-left: 2px solid var(--rule-strong);
+  padding: var(--space-2) var(--space-4);
+  margin: var(--space-3) 0;
+  max-width: 60em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* --- prev/next nav ----------------------------------------- */
+.mini-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--hairline-strong);
+}
+.mini-nav a, .mini-nav .placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-2) 0;
+  border-bottom: 0;
+}
+.mini-nav .label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.mini-nav .title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  font-weight: 500;
+  font-variation-settings: "opsz" 18;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.2;
+  transition: color var(--dur) var(--ease-out);
+}
+.mini-nav a:hover .title { color: var(--signal); }
+.mini-nav .next { text-align: right; align-items: flex-end; }
+.mini-nav .placeholder { visibility: hidden; }
+
+@media (max-width: 640px) {
+  .mini-nav { grid-template-columns: 1fr; gap: var(--space-3); }
+  .mini-nav .next { text-align: left; align-items: flex-start; }
+  .mini-nav .placeholder { display: none; }
+}
+
+/* --- CTA section -------------------------------------------- */
+.mini-cta {
+  margin-top: var(--space-6);
+  padding: var(--space-5) 0;
+  border-top: var(--hairline-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mini-cta p {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 50em;
+  margin: 0;
+}
+.mini-cta-actions {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+.mini-cta-actions a {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 4px;
+  transition: color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.mini-cta-actions a:hover { color: var(--signal); border-bottom-color: var(--signal); }
+
+/* --- footer ------------------------------------------------- */
+.mini-footer {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: var(--hairline);
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* --- /p/index list ----------------------------------------- */
+.mini-index {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  border-top: var(--hairline-strong);
+}
+.mini-index li {
+  display: grid;
+  grid-template-columns: 4em 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--hairline);
+  align-items: baseline;
+}
+.mini-index .num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--ink-mute);
+}
+.mini-index a {
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  font-weight: 500;
+  font-variation-settings: "opsz" 24;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2px;
+  transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+}
+.mini-index a:hover { color: var(--signal); border-bottom-color: var(--signal); }
+.mini-index .gloss {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  color: var(--ink-mute);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}

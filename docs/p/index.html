@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13110D">
+<title>Six principles for trustworthy agentic AI &middot; BRAG</title>
+<meta name="description" content="Six design principles abstracted from BRAG — for builders shipping agentic AI in production.">
+<meta property="og:title" content="Six principles for trustworthy agentic AI">
+<meta property="og:description" content="Design rules abstracted from BRAG for builders shipping agentic AI. Take what's useful — none of this requires BRAG.">
+<meta property="og:type" content="article">
+<link rel="preload" href="../assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/mini.css">
+</head>
+<body>
+
+<main class="mini">
+
+  <div class="mini-masthead">
+    <a class="mini-back" href="../"><span class="arrow">&larr;</span>BRAG</a>
+    <span class="mini-chrome">Principles &middot; index</span>
+  </div>
+
+  <header class="mini-hero">
+    <span class="eyebrow">For builders</span>
+    <h1>Six principles for trustworthy agentic AI.</h1>
+    <p class="lede">Design rules abstracted from BRAG, the retrieval&#8209;augmented generation system with two LLM skeptics gating every answer. Take what&rsquo;s useful &mdash; none of this requires BRAG.</p>
+  </header>
+
+  <ol class="mini-index">
+    <li><span class="num">01</span><div><a href="typed-evidence.html">Type your evidence</a><span class="gloss">Embeddings give you &ldquo;similar.&rdquo; Type tags give you &ldquo;relevant.&rdquo;</span></div></li>
+    <li><span class="num">02</span><div><a href="separate-channel.html">Numbers come through a separate channel</a><span class="gloss">The LLM never writes a number it didn&rsquo;t receive as a typed value.</span></div></li>
+    <li><span class="num">03</span><div><a href="refusal-step.html">Add a refusal step</a><span class="gloss">A clean &ldquo;I don&rsquo;t know&rdquo; is the highest&#8209;value behaviour an agent can have &mdash; and the hardest to ship.</span></div></li>
+    <li><span class="num">04</span><div><a href="run-a-skeptic.html">Run a skeptic against your own answer</a><span class="gloss">A second LLM tasked with refuting your first one catches what no eval set can.</span></div></li>
+    <li><span class="num">05</span><div><a href="logged-decisions.html">Make every decision logged</a><span class="gloss">When someone asks &ldquo;why did the system do that?&rdquo; you should be able to show them, step by step.</span></div></li>
+    <li><span class="num">06</span><div><a href="degrade-visibly.html">Degrade visibly</a><span class="gloss">The worst failure mode is a confident wrong answer; the second worst is a system that fails silently.</span></div></li>
+  </ol>
+
+  <section class="mini-cta">
+    <div class="mini-cta-actions">
+      <a href="../">Read the full BRAG showcase &rarr;</a>
+      <a href="../#proof">Watch the side&#8209;by&#8209;side proof &rarr;</a>
+    </div>
+  </section>
+
+  <div class="mini-footer">
+    <span>BRAG &middot; Boosted RAG</span>
+    <span>by Daniel Wipert</span>
+  </div>
+
+</main>
+
+</body>
+</html>
