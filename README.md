@@ -1,6 +1,6 @@
 # BRAG — Boosted Retrieval-Augmented Generation
 
-A cybernetic RAG system over ten years of Netflix's public financial reporting (May 2016 – May 2026, ~120 documents). Showcase build by [Daniel Wipert](https://github.com/danielwipert).
+A retrieval-augmented generation system over ten years of Netflix's public financial reporting (May 2016 – May 2026, ~120 documents). Showcase build by [Daniel Wipert](https://github.com/danielwipert).
 
 The distinguishing commitment, versus a textbook RAG: **every Normal-coverage answer is gated by two LLM agents whose job is to disagree with the retrieved evidence** — a Verifier that checks constructive coverage, and a Refutation Agent that runs an adversarial counterfactual probe. If either fails, the answer either degrades (Partial / Clarification Request / Hard Halt) or discloses the disagreement in the final output.
 

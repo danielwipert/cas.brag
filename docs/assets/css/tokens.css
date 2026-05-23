@@ -29,18 +29,18 @@
 }
 
 :root {
-  /* --- color ----------------------------------------------- */
-  --ink:           #0E0E10;
-  --ink-soft:      #3A3A3D;
-  --ink-mute:      #6E6E72;
-  --paper:         #FAF8F4;
-  --paper-raised:  #FFFFFF;
-  --rule:          #D9D6D0;
-  --rule-strong:   #8C8983;
-  --signal:        #C8102E;
-  --verify:        #1F6E3D;
-  --warn:          #B8651A;
-  --halt:          #5B1D1D;
+  /* --- color (dark editorial, warm undertone) -------------- */
+  --ink:           #EBE7DD;  /* warm cream — primary text */
+  --ink-soft:      #B8B3A6;  /* secondary text */
+  --ink-mute:      #7A766B;  /* tertiary, captions, UI */
+  --paper:         #13110D;  /* very dark warm — page bg */
+  --paper-raised:  #1C1A15;  /* raised — cards, panels, artifacts */
+  --rule:          #2D2A23;  /* subtle hairline */
+  --rule-strong:   #4D483D;  /* visible hairline */
+  --signal:        #FF4E5A;  /* coral-red — single accent */
+  --verify:        #3DD68C;  /* verifier-pass, normal outcomes */
+  --warn:          #F0A847;  /* partial / degraded */
+  --halt:          #B85F5F;  /* hard halt */
 
   /* --- type families -------------------------------------- */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
