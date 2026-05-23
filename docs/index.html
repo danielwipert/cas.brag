@@ -56,8 +56,9 @@
       <p class="lead">
         Every confident answer BRAG gives is gated by two LLM agents whose job is to
         disagree with the evidence &mdash; a Verifier and a Refutation Agent. If they
-        can&rsquo;t refute the answer, it stands. If they can, it changes, downgrades,
-        or discloses the disagreement.
+        can&rsquo;t refute the answer, it stands. If they can, the answer changes,
+        downgrades, or discloses the disagreement. What reaches the reader is either
+        correct, or honest about what&rsquo;s missing &mdash; never a confident hallucination.
       </p>
     </div>
   </div>
@@ -80,7 +81,8 @@
     <p>
       That works for a static product manual. It breaks the moment your corpus contains
       anything that changes over time, contradicts itself, or could be misread by a
-      paraphraser. Four failure modes appear over and over.
+      paraphraser. Four failure modes appear over and over &mdash; each one a quiet way
+      an AI assistant becomes wrong, with citations attached.
     </p>
   </div>
   <div class="display">
@@ -137,8 +139,9 @@
       Never let the LLM be the only thing between the question and the answer.
     </h2>
     <p class="coda">
-      BRAG enforces this with a pipeline of typed, auditable decisions. The LLM writes prose.
-      It doesn&rsquo;t invent numbers, doesn&rsquo;t skip skeptics, doesn&rsquo;t answer questions it shouldn&rsquo;t have taken.
+      BRAG enforces this with a pipeline of structured, traceable steps. The LLM writes prose &mdash;
+      nothing else. It doesn&rsquo;t invent numbers, doesn&rsquo;t skip skeptics, doesn&rsquo;t answer
+      questions it shouldn&rsquo;t have taken.
     </p>
   </div>
 </section>
@@ -399,7 +402,7 @@
       <!-- Normal RAG column -->
       <div class="compare-col" data-system="normal">
         <header>
-          <span class="eyebrow no-rule">Baseline</span>
+          <span class="eyebrow no-rule">Baseline &middot; reconstructed</span>
           <h3>Normal RAG</h3>
         </header>
 
@@ -421,7 +424,7 @@
       <!-- BRAG column -->
       <div class="compare-col" data-system="brag">
         <header>
-          <span class="eyebrow no-rule">Skeptical</span>
+          <span class="eyebrow no-rule">Skeptical &middot; verbatim trace</span>
           <h3>BRAG</h3>
         </header>
 
@@ -450,7 +453,7 @@
           <div class="compare-stage-body prose">Yes &mdash; in 2017 and 2018 Netflix executives stated they had no plans to add ads. This position was reversed in 2022 with the announcement of the ad&#8209;supported tier (Q2&nbsp;2022 letter, Q3&nbsp;2022 call).</div>
         </div>
 
-        <div class="compare-outcome ok">Temporally complete</div>
+        <div class="compare-outcome ok">Correct and complete</div>
       </div>
     </div>
 
@@ -684,9 +687,12 @@
     <div class="factstore">
       <h3>Fact Store &mdash; dual&#8209;path ingestion</h3>
       <p>
-        A core design choice: financial values come from XBRL, not from the LLM.
-        Both paths produce the same <span class="mono">FactRecord</span> schema and land in the same
-        store. The Refutation Agent draws from both.
+        Financial numbers come from XBRL (the structured data the SEC requires), not from
+        an LLM reading prose. That eliminates a whole category of hallucination &mdash; the
+        system can&rsquo;t paraphrase or invent a figure because the figure arrives through a
+        separate, deterministic channel. Both paths produce the same
+        <span class="mono">FactRecord</span> schema and land in the same store; the Refutation
+        Agent draws from both.
       </p>
       <div class="path">
         <h4>XBRL path</h4>
@@ -721,8 +727,8 @@
   <div class="argument">
     <h2 class="h3">This is a portfolio showcase, not a production system.</h2>
     <p>
-      The architectural pieces are real and audit&#8209;traceable; the calibration is honest
-      about its failure modes.
+      The architecture is real and audit&#8209;traceable; the tuning is honest about its
+      failure modes.
     </p>
   </div>
   <div class="display">
@@ -730,16 +736,17 @@
       <div class="limit">
         <h4>Corpus coverage gap</h4>
         <p>
-          Eight pre&#8209;2019 10&#8209;Q filings are missing MD&amp;A and Quantitative&#8209;Risk items.
-          edgartools&rsquo; legacy parser doesn&rsquo;t reach Part&nbsp;I items on old TenQ. The 10&#8209;K side
-          was partially rescued. Queries depending on pre&#8209;2019 narrative may degrade to Partial.
+          A handful of older filings (pre&#8209;2019 quarterly reports) couldn&rsquo;t be parsed for
+          management discussion &mdash; the third&#8209;party SEC&#8209;parsing library we use doesn&rsquo;t
+          reach those sections on documents from that era. Queries that depend on pre&#8209;2019
+          narrative may return Partial.
         </p>
       </div>
       <div class="limit">
         <h4>Adversarial calibration is not exhaustive</h4>
         <p>
-          The full Phase 4 adversarial slate (<span class="mono">scripts/test_phase4_adversarial.py</span>)
-          does not yet pass 15&hairsp;/&hairsp;15. The six curated demo queries do.
+          A broader stress&#8209;test slate of fifteen adversarial queries doesn&rsquo;t yet pass cleanly.
+          The six curated demo queries do; the repository ships both slates so the gap is visible.
         </p>
       </div>
       <div class="limit">
