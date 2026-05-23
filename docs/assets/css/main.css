@@ -42,11 +42,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .hero-text {
   font-size: var(--fs-hero);
-  line-height: 1.02;
-  letter-spacing: -0.025em;
-  font-weight: 400;
-  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0;
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+  font-weight: 500;
+  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
   margin: 0;
+  max-width: 22ch;
 }
 .h1 { font-size: var(--fs-h1); font-variation-settings: "opsz" 96; letter-spacing: -0.02em; }
 .h2 { font-size: var(--fs-h2); font-variation-settings: "opsz" 48; letter-spacing: -0.018em; }
@@ -224,14 +225,14 @@ h1, h2, h3, h4, h5, h6 {
 .hero-text .signal {
   color: var(--signal);
   display: block;
-  margin-top: 0.3em;
-  font-size: 0.55em;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  font-variation-settings: "opsz" 72;
+  margin-top: 0.35em;
+  font-size: 0.7em;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  font-variation-settings: "opsz" 48;
 }
 @media (max-width: 1023px) {
-  .hero-text .signal { font-size: 0.65em; margin-top: 0.4em; }
+  .hero-text .signal { font-size: 0.78em; margin-top: 0.4em; }
 }
 
 .hero .lead-block {
