@@ -31,6 +31,7 @@
       <a href="#proof">The proof</a>
       <a href="#gallery">Gallery</a>
       <a href="#architecture">Architecture</a>
+      <a href="#builders">For builders</a>
       <a href="#colophon">Colophon</a>
     </nav>
   </div>
@@ -717,11 +718,91 @@
 </section>
 
 <!-- ============================================================
-     08. COLOPHON
+     08. FOR BUILDERS &mdash; principles abstracted from BRAG
+     ============================================================ -->
+<section class="section" id="builders">
+  <div class="sidebar">
+    <span class="section-num">08</span>
+    <span class="eyebrow">For builders</span>
+  </div>
+  <div class="argument">
+    <h2 class="h3">Six principles for trustworthy agentic AI.</h2>
+    <p>
+      BRAG is a Q&amp;A system, but the design rules generalise to any agent that retrieves
+      evidence, reasons about it, and acts. If your agent <em>does</em> things instead of
+      just answering, the case for these principles gets stronger, not weaker &mdash; wrong
+      answers from a chatbot are embarrassing; wrong actions from an agent are operational
+      incidents.
+    </p>
+    <p>
+      Take what&rsquo;s useful. None of this requires BRAG.
+    </p>
+  </div>
+  <div class="display">
+    <div class="problem-stack">
+      <div class="problem-row">
+        <h4>01 &mdash; Type your evidence</h4>
+        <p>
+          Don&rsquo;t let your retriever return undifferentiated chunks. Tag what <em>kind</em> of
+          evidence you&rsquo;re retrieving (forward&#8209;looking, historical, policy, opinion,
+          structured number) and let downstream stages reason about coverage on those types.
+          Embeddings give you &ldquo;similar.&rdquo; Type tags give you &ldquo;relevant.&rdquo;
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>02 &mdash; Numbers come through a separate channel</h4>
+        <p>
+          Never let an LLM read structured values out of prose. Parse them deterministically,
+          store them with provenance, cite them by ID. BRAG uses XBRL; your equivalent might
+          be a database, a CSV, an internal API. The rule: the LLM never writes a number it
+          didn&rsquo;t receive as a typed value.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>03 &mdash; Add a refusal step</h4>
+        <p>
+          Before any retrieval runs, decide whether the question (or task) is even in scope.
+          A clean &ldquo;I don&rsquo;t know&rdquo; is the highest&#8209;value behaviour an agent can have &mdash;
+          and the hardest to ship. Default agentic systems happily try anything; trustworthy
+          ones refuse out&#8209;of&#8209;scope work explicitly.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>04 &mdash; Run a skeptic against your own answer</h4>
+        <p>
+          A second LLM whose only job is to refute the draft answer catches things no eval
+          set can. It roughly doubles your LLM cost per query &mdash; that&rsquo;s real &mdash; but it&rsquo;s
+          the difference between &ldquo;demo&#8209;good&rdquo; and &ldquo;I&rsquo;d let a regulated customer see this.&rdquo;
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>05 &mdash; Make every decision logged</h4>
+        <p>
+          Every retrieval, verdict, hypothesis, degradation, and tool call goes in a single
+          ledger you can replay later. When someone asks &ldquo;why did the system do that?&rdquo; you
+          should be able to walk them through it step by step. Audit trails aren&rsquo;t optional
+          in regulated industries &mdash; and they&rsquo;re invaluable everywhere else.
+        </p>
+      </div>
+      <div class="problem-row">
+        <h4>06 &mdash; Degrade visibly</h4>
+        <p>
+          The worst failure mode is a confident wrong answer; the second worst is a system
+          that fails silently. Build explicit outcome states &mdash; full answer, partial,
+          clarification request, refusal &mdash; and surface them in the response itself. Visible
+          degradation is the third option, and almost always the right one.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     09. COLOPHON
      ============================================================ -->
 <section class="section section--tight" id="colophon">
   <div class="sidebar">
-    <span class="section-num">08</span>
+    <span class="section-num">09</span>
     <span class="eyebrow">Colophon</span>
   </div>
   <div class="display">
