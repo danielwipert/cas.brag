@@ -49,9 +49,9 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   max-width: 22ch;
 }
-.h1 { font-size: var(--fs-h1); font-variation-settings: "opsz" 96; letter-spacing: -0.02em; }
-.h2 { font-size: var(--fs-h2); font-variation-settings: "opsz" 48; letter-spacing: -0.018em; }
-.h3 { font-size: var(--fs-h3); font-variation-settings: "opsz" 32; }
+.h1 { font-size: var(--fs-h1); font-variation-settings: "opsz" 48; letter-spacing: -0.02em; }
+.h2 { font-size: var(--fs-h2); font-variation-settings: "opsz" 36; letter-spacing: -0.018em; }
+.h3 { font-size: var(--fs-h3); font-variation-settings: "opsz" 28; }
 .h4 { font-size: var(--fs-h4); font-variation-settings: "opsz" 24; }
 .h5 { font-size: var(--fs-h5); font-variation-settings: "opsz" 18; line-height: 1.2; }
 
@@ -132,21 +132,21 @@ h1, h2, h3, h4, h5, h6 {
 /* --- section number (sidebar) --------------------------------- */
 .section-num {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 5vw, 5rem);
+  font-size: clamp(2rem, 3vw, 3rem);
   font-weight: 300;
-  font-variation-settings: "opsz" 96;
+  font-variation-settings: "opsz" 48;
   color: var(--rule-strong);
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
 .section-num.small {
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
   color: var(--ink-soft);
 }
 @media (max-width: 1023px) {
   .section-num {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--ink-soft);
     display: inline-block;
     margin-right: var(--space-2);
@@ -231,8 +231,21 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.018em;
   font-variation-settings: "opsz" 48;
 }
+.hero-text .hero-expand {
+  display: block;
+  margin-top: 1.6em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-mute);
+  text-transform: none;
+  font-variation-settings: normal;
+  line-height: 1.5;
+}
 @media (max-width: 1023px) {
   .hero-text .signal { font-size: 0.78em; margin-top: 0.4em; }
+  .hero-text .hero-expand { margin-top: 1.4em; }
 }
 
 .hero .lead-block {
@@ -279,11 +292,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 .rule-statement h2 {
   font-size: var(--fs-h1);
-  font-variation-settings: "opsz" 96;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 1.06;
-  max-width: 20ch;
+  font-variation-settings: "opsz" 48;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  max-width: 22ch;
   color: var(--ink);
 }
 .rule-statement .coda {
