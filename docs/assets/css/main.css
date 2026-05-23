@@ -820,40 +820,6 @@ h1, h2, h3, h4, h5, h6 {
   .factstore { grid-template-columns: 1fr; }
 }
 
-/* --- limitations (section 09) -------------------------------- */
-.limitations {
-  display: grid;
-  grid-template-columns: 1fr;
-  margin-top: var(--space-4);
-  border-top: var(--hairline);
-}
-.limit {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  column-gap: var(--space-5);
-  padding: var(--space-3) 0;
-  border-bottom: var(--hairline);
-}
-.limit h4 {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--fs-h6);
-  font-weight: 500;
-  font-variation-settings: "opsz" 18;
-  letter-spacing: 0;
-  color: var(--ink);
-  margin: 0;
-}
-.limit p {
-  margin: 0;
-  font-size: var(--fs-caption);
-  color: var(--ink-soft);
-  max-width: 48em;
-}
-@media (max-width: 768px) {
-  .limit { grid-template-columns: 1fr; row-gap: var(--space-1); }
-}
-
 /* --- colophon (section 10) ----------------------------------- */
 .colophon {
   display: grid;
