@@ -45,7 +45,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.05;
   letter-spacing: -0.022em;
   font-weight: 500;
-  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 72;
   margin: 0;
   max-width: 22ch;
 }
@@ -133,8 +133,7 @@ h1, h2, h3, h4, h5, h6 {
 .section-num {
   font-family: var(--font-display);
   font-size: clamp(2rem, 3vw, 3rem);
-  font-weight: 300;
-  font-variation-settings: "opsz" 48;
+  font-weight: 400;
   color: var(--rule-strong);
   line-height: 1;
   letter-spacing: -0.03em;
@@ -951,6 +950,110 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
   color: var(--ink-mute);
   padding-block: var(--space-4);
+}
+
+/* --- proof teaser (bridge between diagnosis and rule) ------- */
+.proof-teaser {
+  padding-block: var(--space-5);
+}
+.proof-teaser .full {
+  border-top: var(--hairline-strong);
+  padding-top: var(--space-4);
+}
+.proof-teaser-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.proof-teaser-q {
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  font-weight: 500;
+  font-variation-settings: "opsz" 24;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.proof-teaser-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: var(--hairline);
+}
+.proof-teaser-col {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.proof-teaser-col + .proof-teaser-col {
+  border-left: var(--hairline);
+}
+.proof-teaser-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.proof-teaser-answer {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--ink-soft);
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--rule-strong);
+  max-width: 36em;
+}
+.proof-teaser-link {
+  padding-top: var(--space-3);
+}
+@media (max-width: 768px) {
+  .proof-teaser-grid { grid-template-columns: 1fr; }
+  .proof-teaser-col + .proof-teaser-col { border-left: 0; border-top: var(--hairline); }
+}
+
+/* --- pipeline overview (compact at-a-glance) ---------------- */
+.pipeline-overview {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: var(--space-4);
+  border-top: var(--hairline-strong);
+  border-left: var(--hairline);
+}
+.pov-step {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-right: var(--hairline);
+  border-bottom: var(--hairline);
+}
+.pov-id {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  color: var(--ink-mute);
+  font-feature-settings: "tnum" 1;
+}
+.pov-name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.pov-model {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  color: var(--ink-mute);
+}
+@media (max-width: 768px) {
+  .pipeline-overview { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 480px) {
+  .pipeline-overview { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* --- utilities ----------------------------------------------- */

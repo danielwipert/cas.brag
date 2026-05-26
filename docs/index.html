@@ -9,7 +9,7 @@
 <meta property="og:title" content="BRAG &mdash; Boosted Retrieval-Augmented Generation">
 <meta property="og:description" content="A RAG system that knows when to disagree with its own evidence.">
 <meta property="og:type" content="website">
-<link rel="preload" href="assets/fonts/fraunces-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/playfair-display-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/tokens.css">
@@ -80,10 +80,8 @@
       hands them to an LLM, and asks it to write an answer. Whatever it pulls, it trusts.
     </p>
     <p>
-      That works for a static product manual. It breaks the moment your corpus contains
-      anything that changes over time, contradicts itself, or could be misread by a
-      paraphraser. Four failure modes appear over and over &mdash; each one a quiet way
-      an AI assistant becomes wrong, with citations attached.
+      That works for a static product manual. It breaks the moment your corpus changes
+      over time or contradicts itself.
     </p>
   </div>
   <div class="display">
@@ -91,39 +89,61 @@
       <div class="problem-row">
         <h4>Stale facts</h4>
         <p>
-          A number gets restated. A definition gets revised. The old version stays in
-          the corpus alongside the new one. Both look relevant to the same question.
-          Cosine similarity can&rsquo;t tell which one is current &mdash; so the system might
-          confidently quote either.
+          A number gets restated; a definition gets revised. The old version stays in
+          the corpus alongside the new one. Cosine similarity can&rsquo;t tell which
+          is current.
         </p>
       </div>
       <div class="problem-row">
         <h4>Contradictions inside the corpus</h4>
         <p>
-          Two passages disagree on the same fact. RAG returns whichever one scored
-          higher and writes an answer from it. The other passage &mdash; the one that
-          would have flipped the answer &mdash; is invisible to the reader and to the model.
+          Two passages disagree on the same fact. RAG returns whichever scored higher.
+          The passage that would have flipped the answer is invisible to the reader
+          and the model.
         </p>
       </div>
       <div class="problem-row">
         <h4>Reversed positions</h4>
         <p>
-          An organization said X. Later, it said not&#8209;X. Both statements are in the
-          corpus, both look on&#8209;topic, and the most&#8209;similar chunk is usually the
-          earlier one (it&rsquo;s often more explicit). The system answers as if the
-          reversal never happened.
+          An organization said X; later, it said not&#8209;X. Both are in the corpus, and
+          the most&#8209;similar chunk is usually the earlier one. The system answers as if
+          the reversal never happened.
         </p>
       </div>
       <div class="problem-row">
         <h4>Hallucinated numbers</h4>
         <p>
-          When an LLM reads a figure out of prose, you have no guarantee it didn&rsquo;t
-          paraphrase it from a softened version nearby &mdash; or invent it from a
-          similar&#8209;looking line. RAG provides no separate channel for numerical
-          values, so the model can launder a guess as a citation.
+          An LLM reading a figure out of prose might paraphrase a softened version
+          nearby or invent one from a similar line. RAG provides no separate channel
+          for numerical values &mdash; the model can launder a guess as a citation.
         </p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PROOF TEASER &mdash; compressed bridge between diagnosis and rule
+     ============================================================ -->
+<section class="section proof-teaser">
+  <div class="full">
+    <div class="proof-teaser-header">
+      <span class="eyebrow no-rule">In practice</span>
+      <p class="proof-teaser-q">&ldquo;Did Netflix ever say it had no plans to add ads?&rdquo;</p>
+    </div>
+    <div class="proof-teaser-grid">
+      <div class="proof-teaser-col">
+        <span class="proof-teaser-label">Normal RAG</span>
+        <p class="proof-teaser-answer">&ldquo;No. Netflix has stated that not having advertising is an important strategic differentiator.&rdquo;</p>
+        <span class="compare-outcome fail">Confidently wrong</span>
+      </div>
+      <div class="proof-teaser-col">
+        <span class="proof-teaser-label">BRAG</span>
+        <p class="proof-teaser-answer">&ldquo;Yes &mdash; in 2017&ndash;2018, Netflix executives said no ads. This was reversed in 2022 with the ad&#8209;supported tier.&rdquo;</p>
+        <span class="compare-outcome ok">Correct and complete</span>
+      </div>
+    </div>
+    <p class="proof-teaser-link"><a href="#proof" class="btn-text">Full pipeline comparison below <span class="arrow">&darr;</span></a></p>
   </div>
 </section>
 
@@ -161,6 +181,39 @@
       Every one of them can refuse, downgrade, or disclose a disagreement. The LLM is only
       allowed to write prose &mdash; never to invent numbers, never to skip a step.
     </p>
+  </div>
+
+  <div class="display pipeline-overview">
+    <div class="pov-step">
+      <span class="pov-id">01</span>
+      <span class="pov-name">Validate</span>
+      <span class="pov-model">deterministic</span>
+    </div>
+    <div class="pov-step">
+      <span class="pov-id">02</span>
+      <span class="pov-name">Plan</span>
+      <span class="pov-model">Llama&nbsp;3.3 70B</span>
+    </div>
+    <div class="pov-step">
+      <span class="pov-id">03</span>
+      <span class="pov-name">Retrieve</span>
+      <span class="pov-model">BGE&#8209;small + BM25</span>
+    </div>
+    <div class="pov-step">
+      <span class="pov-id">04</span>
+      <span class="pov-name">Verify</span>
+      <span class="pov-model">Qwen2.5 72B</span>
+    </div>
+    <div class="pov-step">
+      <span class="pov-id">05</span>
+      <span class="pov-name">Refute</span>
+      <span class="pov-model">Mistral Large 2411</span>
+    </div>
+    <div class="pov-step">
+      <span class="pov-id">06</span>
+      <span class="pov-name">Generate + Govern</span>
+      <span class="pov-model">DeepSeek&#8209;Chat</span>
+    </div>
   </div>
 
   <!-- 04.1 Input Validation -->
@@ -844,7 +897,7 @@
       <div class="col-row mono"><dt>Embeddings</dt><dd>BAAI / bge&#8209;small&#8209;en&#8209;v1.5</dd></div>
       <div class="col-row mono"><dt>Provider</dt><dd>OpenRouter</dd></div>
 
-      <div class="col-row"><dt>Type</dt><dd>Fraunces &middot; Inter &middot; JetBrains Mono</dd></div>
+      <div class="col-row"><dt>Type</dt><dd>Playfair Display &middot; Inter &middot; JetBrains Mono</dd></div>
       <div class="col-row"><dt>Designed</dt><dd>in homage to M&uuml;ller&#8209;Brockmann, Lupton, Elam, Vignelli</dd></div>
 
       <div class="col-row"><dt>Period</dt><dd>May&nbsp;2016 &mdash; May&nbsp;2026</dd></div>
